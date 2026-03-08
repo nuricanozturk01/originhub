@@ -8,10 +8,8 @@ insert_final_newline = true
 trim_trailing_whitespace = true
 ; check line length and indent size with other tools
 
-indent_size = 2
-
 [{*.cmd,*.bat}]
 end_of_line = crlf
 
-[{*.xml,*.yml,*.yaml,*.java,*.css,*.html,*.js,*.json,*.ts, *.sql}]
+[{*.xml,*.yml,*.yaml,*.java,*.css,*.html,*.js,*.json,*.ts}]
 indent_size = 2

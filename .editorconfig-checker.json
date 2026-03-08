@@ -1,0 +1,8 @@
+{
+  "Exclude": [
+    "README.*",
+    ".*\\.txt$",
+    ".*pom\\.xml$",
+    ".*site\\.webmanifest$"
+  ]
+}

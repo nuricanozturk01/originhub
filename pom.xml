@@ -198,23 +198,6 @@
       </plugin>
 
       <plugin>
-        <groupId>com.mycila</groupId>
-        <artifactId>license-maven-plugin</artifactId>
-        <version>4.3</version>
-        <configuration>
-          <licenseSets>
-            <licenseSet>
-              <header>LICENSE_HEADER.txt</header>
-              <includes>
-                <include>src/**/*.java</include>
-                <include>originhub-frontend/src/**/*.ts</include>
-              </includes>
-            </licenseSet>
-          </licenseSets>
-        </configuration>
-      </plugin>
-
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
       </plugin>
