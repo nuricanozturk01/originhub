@@ -274,12 +274,6 @@ OriginHub is under active development. Here's what's planned:
 
 ---
 
-## 📄 License
-
-OriginHub is open-source software licensed under the [MIT License](LICENSE).
-
----
-
 ## ☕ Support
 
 If OriginHub saves you time or you just want to say thanks, consider buying me a coffee. It keeps the project alive and the commits coming.
