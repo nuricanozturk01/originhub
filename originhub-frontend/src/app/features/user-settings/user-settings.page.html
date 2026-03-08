@@ -1,0 +1,222 @@
+<div class="bg-base-200 min-h-screen">
+  <div class="mx-auto max-w-3xl max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+    <h1 class="text-base-content mb-6 text-2xl font-bold">Settings</h1>
+
+    <div role="tablist" class="tabs tabs-boxed mb-6">
+      <button type="button" class="tab" [class.tab-active]="activeTab() === 'profile'" (click)="setTab('profile')">
+        Profile
+      </button>
+      <button type="button" class="tab" [class.tab-active]="activeTab() === 'security'" (click)="setTab('security')">
+        Security
+      </button>
+      <button type="button" class="tab" [class.tab-active]="activeTab() === 'ssh'" (click)="setTab('ssh')">
+        SSH Keys
+      </button>
+    </div>
+
+    @if (activeTab() === 'profile') {
+    <div class="card bg-base-100 border-base-300 border shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base-content flex items-center gap-2">
+          <lucide-icon name="user" class="text-primary size-5"></lucide-icon>
+          Profile
+        </h2>
+        <p class="text-base-content/70 text-sm">Update your display name and profile picture.</p>
+        <div class="form-control mt-4">
+          <label class="label" for="display-name"><span class="label-text">Display name</span></label>
+          <input
+            id="display-name"
+            type="text"
+            class="input input-bordered w-full"
+            placeholder="Your name"
+            [ngModel]="displayName()"
+            (ngModelChange)="displayName.set($event)"
+          />
+          @if (displayNameError()) {
+          <p class="text-error mt-1 text-sm">{{ displayNameError() }}</p>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm mt-4"
+          [disabled]="savingDisplayName()"
+          (click)="saveDisplayName()"
+        >
+          @if (savingDisplayName()) {
+          <span class="loading loading-spinner loading-sm"></span>
+          } @else { Save }
+        </button>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 border-base-300 mt-6 border shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base-content flex items-center gap-2">Change username</h2>
+        <p class="text-base-content/70 text-sm">Your username is used in URLs and when others mention you.</p>
+        <div class="form-control mt-4">
+          <label class="label" for="username"><span class="label-text">Username</span></label>
+          <input
+            id="username"
+            type="text"
+            class="input input-bordered w-full"
+            placeholder="username"
+            [ngModel]="username()"
+            (ngModelChange)="username.set($event)"
+          />
+          @if (usernameError()) {
+          <p class="text-error mt-1 text-sm">{{ usernameError() }}</p>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm mt-4"
+          [disabled]="
+              !username().trim() || username() === tokenService.getUsername() || savingUsername()
+            "
+          (click)="saveUsername()"
+        >
+          @if (savingUsername()) {
+          <span class="loading loading-spinner loading-sm"></span>
+          } @else { Save }
+        </button>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 border-error/30 mt-6 border shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-error flex items-center gap-2">Danger Zone</h2>
+        <p class="text-base-content/70 text-sm">
+          Permanently delete your account and all associated data. This action cannot be undone.
+        </p>
+        <div class="card-actions mt-4">
+          <button type="button" class="btn btn-error btn-outline btn-sm" (click)="deleteAccount()">
+            Delete my account
+          </button>
+        </div>
+      </div>
+    </div>
+    } @if (activeTab() === 'security') {
+    <div class="card bg-base-100 border-base-300 border shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base-content flex items-center gap-2">
+          <lucide-icon name="shield" class="text-primary size-5"></lucide-icon>
+          Security
+        </h2>
+        <p class="text-base-content/70 text-sm">Change your password.</p>
+        <div class="form-control mt-4">
+          <label class="label" for="current-password"><span class="label-text">Current password</span></label>
+          <input
+            id="current-password"
+            type="password"
+            class="input input-bordered w-full"
+            placeholder="••••••••"
+            [ngModel]="currentPassword()"
+            (ngModelChange)="currentPassword.set($event)"
+          />
+        </div>
+        <div class="form-control mt-2">
+          <label class="label" for="new-password"><span class="label-text">New password</span></label>
+          <input
+            id="new-password"
+            type="password"
+            class="input input-bordered w-full"
+            placeholder="••••••••"
+            [ngModel]="newPassword()"
+            (ngModelChange)="newPassword.set($event)"
+          />
+          @if (passwordError()) {
+          <p class="text-error mt-1 text-sm">{{ passwordError() }}</p>
+          }
+        </div>
+        <button
+          type="button"
+          class="btn btn-primary btn-sm mt-4"
+          [disabled]="!currentPassword().trim() || !newPassword().trim() || savingPassword()"
+          (click)="savePassword()"
+        >
+          @if (savingPassword()) {
+          <span class="loading loading-spinner loading-sm"></span>
+          } @else { Update password }
+        </button>
+      </div>
+    </div>
+    } @if (activeTab() === 'ssh') {
+    <div class="card bg-base-100 border-base-300 border shadow-sm">
+      <div class="card-body">
+        <h2 class="card-title text-base-content flex items-center gap-2">
+          <lucide-icon name="keyRound" class="text-primary size-5"></lucide-icon>
+          SSH Keys
+        </h2>
+        <p class="text-base-content/70 text-sm">Add SSH keys for Git operations.</p>
+        <button type="button" class="btn btn-primary btn-sm mt-4" (click)="openAddSsh()">Add SSH key</button>
+
+        @if (sshLoading()) {
+        <div class="flex justify-center py-8">
+          <span class="loading loading-spinner loading-md text-primary"></span>
+        </div>
+        } @else {
+        <div class="mt-4 space-y-3">
+          @for (k of sshKeys(); track k.id) {
+          <div class="bg-base-200 flex items-center justify-between rounded-lg p-3">
+            <div>
+              <span class="font-medium">{{ k.title }}</span>
+              <span class="text-base-content/60 ml-2 font-mono text-sm">{{ k.fingerprint }}</span>
+            </div>
+            <button type="button" class="btn btn-ghost btn-xs text-error" (click)="deleteSshKey(k.id)">Remove</button>
+          </div>
+          } @if (sshKeys().length === 0) {
+          <p class="text-base-content/60 py-8 text-center">No SSH keys yet.</p>
+          }
+        </div>
+        }
+      </div>
+    </div>
+    }
+  </div>
+</div>
+
+@if (addSshModal()) {
+<div class="modal modal-open">
+  <div class="modal-box">
+    <h3 class="text-base-content text-lg font-bold">Add SSH key</h3>
+    <div class="form-control mt-4">
+      <label class="label" for="ssh-title"><span class="label-text">Title</span></label>
+      <input
+        id="ssh-title"
+        type="text"
+        class="input input-bordered w-full"
+        placeholder="e.g. My laptop"
+        [ngModel]="newSshTitle()"
+        (ngModelChange)="newSshTitle.set($event)"
+      />
+    </div>
+    <div class="form-control mt-2">
+      <label class="label" for="ssh-public-key"><span class="label-text">Public key</span></label>
+      <textarea
+        id="ssh-public-key"
+        class="textarea textarea-bordered w-full font-mono text-sm"
+        rows="4"
+        placeholder="ssh-ed25519 AAAA..."
+        [ngModel]="newSshKey()"
+        (ngModelChange)="newSshKey.set($event)"
+      ></textarea>
+    </div>
+    <div class="modal-action">
+      <button type="button" class="btn" (click)="closeAddSsh()">Cancel</button>
+      <button
+        type="button"
+        class="btn btn-primary"
+        [disabled]="!newSshTitle().trim() || !newSshKey().trim() || addingSsh()"
+        (click)="addSshKey()"
+      >
+        @if (addingSsh()) {
+        <span class="loading loading-spinner loading-sm"></span>
+        } @else { Add key }
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button type="button" (click)="closeAddSsh()">close</button>
+  </form>
+</div>
+}

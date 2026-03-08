@@ -1,0 +1,26 @@
+@import 'highlight.js/styles/github-dark.css';
+
+td :global(.hljs-keyword) {
+  color: #ff7b72;
+}
+td :global(.hljs-string) {
+  color: #a5d6ff;
+}
+td :global(.hljs-comment) {
+  color: #8b949e;
+}
+td :global(.hljs-number) {
+  color: #79c0ff;
+}
+td :global(.hljs-function) {
+  color: #d2a8ff;
+}
+td :global(.hljs-title) {
+  color: #d2a8ff;
+}
+td :global(.hljs-type) {
+  color: #ffa657;
+}
+td :global(.hljs-built_in) {
+  color: #ffa657;
+}

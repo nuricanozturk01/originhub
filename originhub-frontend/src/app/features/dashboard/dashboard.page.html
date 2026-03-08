@@ -1,0 +1,67 @@
+<div class="bg-base-200 min-h-screen">
+  <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-1">
+      <div class="flex flex-col gap-6 lg:col-span-2">
+        <div class="flex items-center justify-between">
+          <h1 class="text-base-content text-2xl font-bold">Your repositories</h1>
+          <a routerLink="/new" class="btn btn-primary btn-sm gap-2">
+            <lucide-icon name="plus" class="size-4"></lucide-icon>
+            New
+          </a>
+        </div>
+
+        @if (loading()) {
+        <div class="flex justify-center py-16">
+          <span class="loading loading-spinner loading-lg text-primary"></span>
+        </div>
+        } @else if (repos().length === 0) {
+        <div class="card bg-base-100 border-base-300 border shadow-sm">
+          <div class="card-body items-center py-16 text-center">
+            <lucide-icon name="bookOpen" class="text-base-content/40 mb-4 size-16"></lucide-icon>
+            <h2 class="card-title text-base-content">No repositories yet</h2>
+            <p class="text-base-content/70 max-w-md">Create your first repository to get started with OriginHub.</p>
+            <a routerLink="/new" class="btn btn-primary mt-4 gap-2">
+              <lucide-icon name="plus" class="size-4"></lucide-icon>
+              Create repository
+            </a>
+          </div>
+        </div>
+        } @else {
+        <div class="space-y-3">
+          @for (item of repos(); track item.repo.id) {
+          <a
+            [routerLink]="['/', item.repo.owner.username, item.repo.name]"
+            class="card bg-base-100 border-base-300 hover:border-primary/50 border shadow-sm transition-colors"
+          >
+            <div class="card-body flex-row items-center gap-4 py-4">
+              <div class="avatar placeholder">
+                <div class="bg-primary/20 text-primary w-12 rounded-lg">
+                  <lucide-icon name="bookOpen" class="size-6"></lucide-icon>
+                </div>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <h3 class="text-base-content truncate font-semibold">
+                    {{ item.repo.owner.username }}/{{ item.repo.name }}
+                  </h3>
+                  @if (item.isCollaborator) {
+                  <span class="badge-pill badge-pill--neutral">Collaborator</span>
+                  }
+                </div>
+                @if (item.repo.description) {
+                <p class="text-base-content/70 line-clamp-1 text-sm">{{ item.repo.description }}</p>
+                }
+                <div class="text-base-content/60 mt-1 flex gap-4 text-xs">
+                  <span>{{ item.repo.updatedAt | relativeTime }}</span>
+                </div>
+              </div>
+              <lucide-icon name="bookOpen" class="text-base-content/40 size-5"></lucide-icon>
+            </div>
+          </a>
+          }
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

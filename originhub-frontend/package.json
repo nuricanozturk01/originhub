@@ -1,0 +1,61 @@
+{
+  "name": "originhub-frontend",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=24.0.0 <25.0.0"
+  },
+  "private": true,
+  "scripts": {
+    "ng": "ng",
+    "prestart": "node set-env.js",
+    "start": "ng serve",
+    "build": "node set-env.js && ng build",
+    "lint": "ng lint",
+    "lint-fix": "ng lint --fix",
+    "build:prod": "node set-env.js && ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "format": "prettier --write \"src/**/*.{ts,html,css,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,html,css,scss}\"",
+    "vercel-build": "pnpm run build:prod"
+  },
+  "dependencies": {
+    "@angular/common": "^21.1.0",
+    "@angular/compiler": "^21.1.0",
+    "@angular/core": "^21.1.0",
+    "@angular/forms": "^21.1.0",
+    "@angular/platform-browser": "^21.1.0",
+    "@angular/router": "^21.1.0",
+    "@eslint/js": "^9.39.2",
+    "@tailwindcss/postcss": "^4.2.1",
+    "daisyui": "^5.5.19",
+    "date-fns": "^4.1.0",
+    "dotenv": "^17.2.3",
+    "dotenv-expand": "^12.0.3",
+    "highlight.js": "^11.11.1",
+    "lucide-angular": "^0.575.0",
+    "marked": "^17.0.3",
+    "md5": "^2.3.0",
+    "postcss": "^8.5.6",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "rxjs": "~7.8.0",
+    "tailwindcss": "^4.2.1",
+    "tslib": "^2.3.0"
+  },
+  "devDependencies": {
+    "@angular-eslint/builder": "21.2.0",
+    "@angular/build": "^21.1.3",
+    "@angular/cli": "^21.1.3",
+    "@angular/compiler-cli": "^21.1.0",
+    "@eslint/js": "^9.39.2",
+    "@types/md5": "^2.3.6",
+    "angular-eslint": "21.2.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.5",
+    "eslint-plugin-simple-import-sort": "^12.1.1",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "8.50.1"
+  }
+}

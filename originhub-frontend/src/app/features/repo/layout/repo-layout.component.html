@@ -1,0 +1,100 @@
+<div class="bg-base-200 min-h-screen">
+  @if (loading()) {
+    <div class="flex justify-center py-24">
+      <span class="loading loading-spinner loading-lg text-primary"></span>
+    </div>
+  } @else if (repo()) {
+    <div class="border-base-300 bg-base-100 border-b">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col gap-4">
+          <div class="flex flex-wrap items-center gap-2">
+            <a
+              [routerLink]="['/', owner()]"
+              class="text-base-content/70 hover:text-base-content font-medium no-underline"
+              >{{ owner() }}</a
+            >
+            <span class="text-base-content/50">/</span>
+            <a
+              [routerLink]="['/', owner(), repoName()]"
+              class="text-base-content hover:text-primary font-semibold no-underline"
+              >{{ repoName() }}</a
+            >
+            @if (repo()?.isPrivate) {
+              <span class="badge-pill badge-pill--neutral">Private</span>
+            }
+          </div>
+          @if (repo()?.description) {
+            <p class="text-base-content/70 text-sm">{{ repo()?.description }}</p>
+          }
+          <div class="text-base-content/70 flex flex-wrap gap-4 text-sm">
+            @if (repo()?.topics?.length) {
+              <div class="flex gap-1">
+                @for (topic of repo()?.topics; track topic) {
+                  <span class="badge-pill badge-pill--topic">{{ topic }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="border-base-300 bg-base-100/80 border-b">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div role="tablist" class="tabs gap-1 bg-transparent py-1">
+          <a
+            [routerLink]="['/', owner(), repoName()]"
+            routerLinkActive="tab-active"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="folder" class="size-4"></lucide-icon>
+            Code
+          </a>
+          <a
+            [routerLink]="['/', owner(), repoName(), 'branches']"
+            routerLinkActive="tab-active"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="gitBranch" class="size-4"></lucide-icon>
+            Branches
+          </a>
+          <a
+            [routerLink]="['/', owner(), repoName(), 'commits', repo()?.defaultBranch ?? 'main']"
+            routerLinkActive="tab-active"
+            [routerLinkActiveOptions]="{ paths: 'subset', matrixParams: 'ignored' }"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="gitCommit" class="size-4"></lucide-icon>
+            Commits
+          </a>
+          <a
+            [routerLink]="['/', owner(), repoName(), 'pulls']"
+            routerLinkActive="tab-active"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="gitPullRequest" class="size-4"></lucide-icon>
+            Pull Requests
+            @if (prCount() > 0) {
+              <span class="badge-pill badge-pill--primary">{{ prCount() }}</span>
+            }
+          </a>
+          @if (repoContext.canEdit()) {
+            <a
+              [routerLink]="['/', owner(), repoName(), 'settings']"
+              routerLinkActive="tab-active"
+              class="tab gap-2 rounded-lg"
+            >
+              <lucide-icon name="settings" class="size-4"></lucide-icon>
+              Settings
+            </a>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <router-outlet></router-outlet>
+    </div>
+  }
+</div>

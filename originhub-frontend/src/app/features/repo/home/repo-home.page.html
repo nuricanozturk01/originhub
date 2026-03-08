@@ -1,0 +1,144 @@
+@if (loading()) {
+<div class="flex justify-center py-20">
+  <span class="loading loading-spinner loading-md text-primary"></span>
+</div>
+} @else if (isEmpty()) {
+<section class="repo-panel p-8">
+  <div class="mx-auto max-w-2xl">
+    <h2 class="text-base-content mb-2 text-xl font-semibold">Get started with {{ repoName() }}</h2>
+    <p class="text-base-content/60 mb-6 text-sm">This repository is empty. Push your first commit to get started.</p>
+
+    <div class="space-y-6">
+      <div>
+        <h3 class="text-base-content mb-2 text-sm font-semibold">Quick setup — clone URL</h3>
+        <div class="bg-base-200 border-base-300 flex items-center gap-2 rounded-lg border p-3">
+          <span class="text-base-content flex-1 truncate font-mono text-sm">{{ httpsCloneUrl() }}</span>
+          <button class="btn btn-ghost btn-xs" (click)="copyText(httpsCloneUrl(), 'https')">
+            @if (copied() === 'https') { Copied! } @else { Copy }
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-base-content mb-2 text-sm font-semibold">Create a new repository on the command line</h3>
+        <div class="bg-base-200 border-base-300 text-base-content/80 space-y-1 rounded-lg border p-4 font-mono text-sm">
+          <p>echo "# {{ repoName() }}" >> README.md</p>
+          <p>git init</p>
+          <p>git add README.md</p>
+          <p>git commit -m "first commit"</p>
+          <p>git branch -M main</p>
+          <p>git remote add origin {{ httpsCloneUrl() }}</p>
+          <p>git push -u origin main</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="text-base-content mb-2 text-sm font-semibold">Push an existing repository from the command line</h3>
+        <div class="bg-base-200 border-base-300 text-base-content/80 space-y-1 rounded-lg border p-4 font-mono text-sm">
+          <p>git remote add origin {{ httpsCloneUrl() }}</p>
+          <p>git branch -M main</p>
+          <p>git push -u origin main</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+} @else {
+<section class="repo-panel overflow-hidden">
+  <div class="repo-toolbar flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <div class="flex items-center gap-2">
+      <select
+        class="select select-bordered select-sm w-44"
+        [value]="branch()"
+        (change)="onBranchChange($any($event.target).value)"
+      >
+        @if (branches().length > 0) { @for (b of branches(); track b.name) {
+        <option [value]="b.name" [selected]="b.name === branch()">{{ b.name }}</option>
+        } } @else {
+        <option [value]="branch()">{{ branch() }}</option>
+        }
+      </select>
+      <button type="button" class="btn btn-sm btn-outline" (click)="openCloneDialog()">Code</button>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="table">
+      <tbody>
+        @for (entry of tree(); track entry.path) {
+        <tr class="hover">
+          <td class="w-10">
+            @if (isTree(entry)) {
+            <lucide-icon name="folder" class="text-primary size-5"></lucide-icon>
+            } @else {
+            <lucide-icon name="fileText" class="text-base-content/60 size-5"></lucide-icon>
+            }
+          </td>
+          <td>
+            <a
+              [routerLink]="entryRoute(entry)"
+              class="text-primary flex items-center gap-1 font-medium no-underline hover:underline"
+            >
+              {{ entry.name }} @if (isTree(entry)) {
+              <lucide-icon name="chevronRight" class="size-4"></lucide-icon>
+              }
+            </a>
+          </td>
+          <td class="text-base-content/60 text-sm">{{ entry.lastCommitMessage ?? 'Latest update' }}</td>
+          <td class="text-base-content/60 text-right text-sm">
+            @if (entry.size !== null && entry.size > 0) { {{ entry.size | fileSize }} }
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (readmeHtml()) {
+<section class="repo-panel mt-6 overflow-hidden">
+  <div class="border-base-300 flex items-center gap-2 border-b px-4 py-3">
+    <lucide-icon name="fileText" class="text-base-content/60 size-4"></lucide-icon>
+    <span class="text-base-content text-sm font-medium">README.md</span>
+  </div>
+  <div class="prose prose-invert readme-content max-w-none p-6" [innerHTML]="readmeHtml()"></div>
+</section>
+} } @if (cloneDialogOpen()) {
+<div
+  class="modal modal-open"
+  role="button"
+  tabindex="0"
+  (click)="closeCloneDialog()"
+  (keydown.enter)="closeCloneDialog()"
+  (keydown.space)="closeCloneDialog(); $event.preventDefault()"
+>
+  <div class="modal-box" tabindex="0" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+    <div class="mb-4 flex items-center justify-between">
+      <h3 class="text-base-content text-lg font-semibold">Clone repository</h3>
+      <button class="btn btn-sm btn-ghost" (click)="closeCloneDialog()">Close</button>
+    </div>
+    <p class="text-base-content/70 mb-4 text-sm">Use SSH and copy the URL.</p>
+
+    <div class="form-control mt-4 space-y-3">
+      <label class="label" for="clone-ssh">
+        <span class="label-text font-medium">SSH</span>
+      </label>
+      <div class="join w-full">
+        <input
+          id="clone-ssh"
+          class="input input-bordered join-item mono w-full text-sm"
+          readonly
+          [value]="sshCloneUrl()"
+        />
+        <button class="btn btn-primary join-item min-w-24 gap-2" (click)="copyText(sshCloneUrl(), 'ssh')">
+          @if (copied() === 'ssh') {
+          <lucide-icon name="checkCircle" class="size-4"></lucide-icon>
+          Copied! } @else {
+          <lucide-icon name="copy" class="size-4"></lucide-icon>
+          Copy }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
