@@ -18,6 +18,7 @@ package com.nuricanozturk.originhub.profile.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,7 @@ import com.nuricanozturk.originhub.profile.dtos.UpdateUsernameForm;
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.BadRequestException;
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemAlreadyExistsException;
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemNotFoundException;
+import com.nuricanozturk.originhub.shared.profile.events.TenantDeletedEvent;
 import com.nuricanozturk.originhub.shared.profile.events.UsernameChangedEvent;
 import com.nuricanozturk.originhub.shared.tenant.dtos.TenantInfo;
 import com.nuricanozturk.originhub.shared.tenant.entities.Tenant;
@@ -212,7 +214,7 @@ class ProfileServiceTest {
   @DisplayName("deleteAccount throws when user not found")
   void deleteAccount_throws_whenUserNotFound() {
     UUID tenantId = UUID.randomUUID();
-    when(tenantRepository.existsById(tenantId)).thenReturn(false);
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> profileService.deleteAccount(tenantId))
         .isInstanceOf(ItemNotFoundException.class)
@@ -223,11 +225,14 @@ class ProfileServiceTest {
   @DisplayName("deleteAccount deletes tenant when found")
   void deleteAccount_deletes_whenFound() {
     UUID tenantId = UUID.randomUUID();
-    when(tenantRepository.existsById(tenantId)).thenReturn(true);
+    Tenant tenant = mock(Tenant.class);
+    when(tenant.getUsername()).thenReturn("testuser");
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(tenant));
 
     profileService.deleteAccount(tenantId);
 
-    verify(tenantRepository).deleteById(tenantId);
+    verify(tenantRepository).delete(tenant);
+    verify(eventPublisher).publishEvent(any(TenantDeletedEvent.class));
   }
 
   @Test
