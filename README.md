@@ -215,6 +215,10 @@ docker compose up -d
 If you already have a PostgreSQL instance running:
 
 ```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+```bash
 docker run -d \
   --name originhub \
   -p 8080:8080 \

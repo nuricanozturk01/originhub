@@ -7,7 +7,7 @@ server:
 originhub:
   ssh:
     port: 2222
-    host-path: ${user.home}/.originhub/.hosts
+    host-path: ${originhub.git.repo-root}/.hosts
     host-key-path: ${originhub.ssh.host-path}/ssh_host_key
   jwt:
     secret: ${ORIGINHUB_JWT_SECRET}
