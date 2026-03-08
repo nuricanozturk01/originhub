@@ -182,7 +182,7 @@ server"*, OriginHub is for you.
 No clone needed. Just run:
 
 ```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/nuricanozturk/originhub/main/docker-compose.yml
+curl -o docker-compose.yml https://raw.githubusercontent.com/nuricanozturk01/originhub/refs/heads/main/docker-compose.yml
 docker compose up -d
 ```
 
