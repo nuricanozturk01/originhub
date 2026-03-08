@@ -1,6 +1,7 @@
 name: MR Checks
 
 on:
+  workflow_dispatch:
   pull_request:
     branches:
       - main
