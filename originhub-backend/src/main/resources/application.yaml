@@ -1,0 +1,103 @@
+server:
+  port: 8080
+  tomcat:
+    connection-timeout: 120000
+    max-part-count: 50
+
+originhub:
+  ssh:
+    port: 2222
+    host-path: ${user.home}/.originhub/.hosts
+    host-key-path: ${originhub.ssh.host-path}/ssh_host_key
+  jwt:
+    secret: MGRlN2RlZDA5OTQ5Y2UzM2M5ZWZlNzYzY2VkMDA2MmU2OTlkYTIyYzAxNTY5Y2E1ZWRhNDdlODQ0NDIxNzk1M2RhN2Q2NmUzMDM2Mjg0NTY0ZjMzNzc5ZjA4MjRlODZiYjQ4ZjhkY2U0MTI4ODIxMWRhY2YwNWZjOTZmYWY2ZmNmNGI1MjNlNjMwOGFmZWUxNGY2YTg3MjM1ODc3ZjQxOGE3YTQxNzA2MjJmYjllNGE1MjBkNGQwNzcwNzUwMTJjNTQ3NTEzYTUwYTE3Zjg5MDNmMWQwNzYxMjViZDg3YmU0MDg1MmU2MGRhZWZhNjYwNzE3NTAyZTEwZjY1OTQzNTM5MjNkMTgzN2U2M2I3YTIzY2E2NGNkZGJhNTc5OGIyOGYwNTQ1Mzc0OTJkOTQ5YmUxOWM0ZDM2ODc1NzkwN2ZlMGMxNjYyMDQyZmJmYTdkY2FmODI0YjhkY2E1NzEyZGIyNzUxYmQ1MmY0YTBlN2Q1NDVjZTJiOTBkMzZlNzQxODRmNzNjYmRhNzkzMTU2ZDNlYjFjZDRjOTgxOTk0ZGNmOWYyNTU0NDc4NTJlNWY5ODg3NzdjNzJmOWYwYjQ5ZTE0NjhhMjZkNTUwYjE1ZjY2Yjc4NTU4Y2ExMmM0ODQ1MDA0M2VhNGRhOWE2ZDA3NTJlNTc0YzEyMTU0NjMzOTY=
+  frontend:
+    base-url: http://localhost:4200
+  git:
+    repo-root: ${user.home}/.originhub
+app:
+  schema: public
+
+spring:
+  modulith:
+    events:
+      jdbc:
+        schema-initialization:
+          enabled: false
+      republish-outstanding-events-on-restart: true
+      completion-mode: update
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/originhub
+    username: admin
+    password: admin123
+
+  jpa:
+    show-sql: false
+    open-in-view: false
+    generate-ddl: false
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
+        default_schema: ${app.schema}
+
+  servlet:
+    multipart:
+      max-file-size: 5GB
+      max-request-size: 6GB
+
+  flyway:
+    enabled: true
+    schemas: public
+    default-schema: public
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: YOUR_GOOGLE_CLIENT_ID
+            client-secret: YOUR_GOOGLE_CLIENT_SECRET
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/google"
+            authorization-grant-type: authorization_code
+            client-name: Google
+          github:
+            client-id: YOUR_GITHUB_CLIENT_ID
+            client-secret: YOUR_GITHUB_CLIENT_SECRET
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/github"
+            authorization-grant-type: authorization_code
+            client-name: Github
+          gitlab:
+            client-id: YOUR_GITLAB_CLIENT_ID
+            client-secret: YOUR_GITLAB_CLIENT_SECRET
+            scope: "profile email"
+            redirect-uri: "{baseUrl}/login/oauth2/code/gitlab"
+            authorization-grant-type: authorization_code
+            client-name: GitLab
+        provider:
+          google:
+            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
+            token-uri: https://oauth2.googleapis.com/token
+            user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
+            user-name-attribute: sub
+          github:
+            authorization-uri: https://github.com/login/oauth/authorize
+            token-uri: https://github.com/login/oauth/access_token
+            user-info-uri: https://api.github.com/user
+            user-name-attribute: id
+          gitlab:
+            authorization-uri: https://gitlab.com/oauth/authorize
+            token-uri: https://gitlab.com/oauth/token
+            user-info-uri: https://gitlab.com/api/v4/user
+            user-name-attribute: id
+
+logging:
+  level:
+    root: warn
+

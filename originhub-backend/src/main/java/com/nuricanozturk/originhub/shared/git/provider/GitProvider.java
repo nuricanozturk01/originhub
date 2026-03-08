@@ -1,0 +1,58 @@
+/*
+ * Copyright 2026 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package com.nuricanozturk.originhub.shared.git.provider;
+
+import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
+import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class GitProvider {
+
+  @Value("${originhub.git.repo-root}")
+  private String repoRoot;
+
+  public @NonNull Repository open(final @NonNull String owner, final @NonNull String repoName)
+      throws IOException {
+
+    final var path = Path.of(this.repoRoot, owner, repoName + ".git");
+
+    if (!Files.exists(path)) {
+      log.warn("Repo Not found in storage while opening.");
+      throw new ItemNotFoundException("repoNotFound in storage.");
+    }
+
+    return new FileRepositoryBuilder().setGitDir(path.toFile()).readEnvironment().build();
+  }
+
+  public void createJGitRepo(final @NonNull Path repoPath) throws IOException {
+
+    try (final var repo = new FileRepositoryBuilder().setGitDir(repoPath.toFile()).build()) {
+
+      repo.create(true);
+    }
+  }
+}
