@@ -53,7 +53,7 @@ export class CreateRepoPage {
     ],
     description: ['', [Validators.maxLength(500)]],
     defaultBranch: [
-      'main',
+      'master',
       [Validators.minLength(1), Validators.maxLength(255), Validators.pattern(/^[a-zA-Z0-9_/-]+$/)],
     ],
     topics: [[] as string[]],
@@ -91,7 +91,7 @@ export class CreateRepoPage {
       const repo = await this.repoService.create({
         name: raw.name,
         description: raw.description || undefined,
-        defaultBranch: raw.defaultBranch || 'main',
+        defaultBranch: raw.defaultBranch || 'master',
         topics: raw.topics.length > 0 ? raw.topics : undefined,
       });
       this.toast.success('Repository created successfully');

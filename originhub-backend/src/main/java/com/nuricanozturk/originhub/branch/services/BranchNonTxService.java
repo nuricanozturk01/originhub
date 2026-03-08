@@ -218,7 +218,9 @@ public class BranchNonTxService {
 
   private void checkLinkResult(final RefUpdate.Result result) {
 
-    if (result != RefUpdate.Result.NEW && result != RefUpdate.Result.FORCED) {
+    if (result != RefUpdate.Result.NEW
+        && result != RefUpdate.Result.FORCED
+        && result != RefUpdate.Result.NO_CHANGE) {
       throw new RuntimeException("Failed to set default branch: " + result);
     }
   }

@@ -49,6 +49,12 @@ public class RepoService {
 
     final var tenant = this.getTenantById(tenantId);
 
+    final var repoOpt = this.repoRepository.findByOwnerIdAndName(tenantId, form.getName());
+
+    if (repoOpt.isPresent()) {
+      return this.repoMapper.toDto(repoOpt.get());
+    }
+
     final var repoObj = new Repo();
     repoObj.setOwner(tenant);
     repoObj.setName(form.getName());

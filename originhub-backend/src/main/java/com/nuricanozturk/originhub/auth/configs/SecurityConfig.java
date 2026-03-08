@@ -66,7 +66,18 @@ public class SecurityConfig {
           auth) {
 
     auth.requestMatchers(
-            "/login",
+            "/",
+            "/index.html",
+            "/*.js",
+            "/*.css",
+            "/*.ico",
+            "/error",
+            "/*.png",
+            "/*.webmanifest",
+            "/assets/**")
+        .permitAll();
+
+    auth.requestMatchers(
             "/api/auth/register",
             "/api/auth/refresh-token",
             "/api/auth/login",
@@ -74,13 +85,15 @@ public class SecurityConfig {
             "/oauth2/authorization/*",
             "/login/success",
             "/login/failure",
-            "/favicon.ico",
             "/logout/success")
         .permitAll();
 
     auth.requestMatchers("/actuator/**").permitAll();
     auth.requestMatchers("/public/**").permitAll();
-    auth.anyRequest().authenticated();
+
+    auth.requestMatchers("/api/**").authenticated();
+    auth.requestMatchers("/git/**").authenticated();
+    auth.anyRequest().permitAll();
   }
 
   private void cors(final @NonNull CorsConfigurer<HttpSecurity> corsConfigurer) {
