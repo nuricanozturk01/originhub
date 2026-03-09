@@ -296,3 +296,8 @@ a:not(.btn):hover {
   background: oklch(0.72 0.15 166 / 0.12);
   color: var(--color-primary);
 }
+.badge-pill--warning {
+  background: oklch(0.8 0.18 85 / 0.15);
+  color: oklch(0.7 0.15 85);
+  border: 1px solid oklch(0.8 0.18 85 / 0.3);
+}
