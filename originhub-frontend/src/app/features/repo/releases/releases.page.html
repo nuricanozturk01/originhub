@@ -1,0 +1,87 @@
+<section class="repo-panel overflow-hidden">
+  <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+    <h2 class="text-base-content text-lg font-semibold">Releases</h2>
+    @if (canEdit()) {
+    <a
+      [routerLink]="['/', owner(), repoName(), 'releases', 'new']"
+      class="btn btn-primary btn-sm gap-1"
+    >
+      <lucide-icon name="plus" class="size-4"></lucide-icon>
+      New release
+    </a>
+    }
+  </div>
+
+  @if (error()) {
+  <div class="alert alert-error mx-4 mb-4">
+    <span>{{ error() }}</span>
+  </div>
+  } @if (loading()) {
+  <div class="flex justify-center py-16">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+  } @else if (releases().length === 0) {
+  <div class="text-base-content/60 flex flex-col items-center justify-center gap-2 px-4 py-16">
+    <lucide-icon name="package" class="size-12"></lucide-icon>
+    <p class="font-medium">No Content</p>
+    <p class="text-center text-sm">No releases yet. Create your first release to get started.</p>
+    @if (canEdit()) {
+    <a
+      [routerLink]="['/', owner(), repoName(), 'releases', 'new']"
+      class="btn btn-primary btn-sm mt-2 gap-1"
+    >
+      <lucide-icon name="plus" class="size-4"></lucide-icon>
+      Create release
+    </a>
+    }
+  </div>
+  } @else {
+  <div class="divide-base-300 divide-y">
+    @for (release of releases(); track release.id) {
+    <div class="flex items-start gap-4 px-4 py-5">
+      <div class="bg-primary/10 text-primary mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+        <lucide-icon name="package" class="size-5"></lucide-icon>
+      </div>
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <a
+            [routerLink]="['/', owner(), repoName(), 'releases', release.id]"
+            class="text-base-content hover:text-primary font-semibold no-underline transition-colors"
+          >
+            {{ release.title }}
+          </a>
+          <span class="badge-pill badge-pill--neutral font-mono text-xs">{{ release.tagName }}</span>
+          @if (release.isPrerelease) {
+          <span class="badge-pill badge-pill--warning">Pre-release</span>
+          } @if (release.isDraft) {
+          <span class="badge-pill badge-pill--draft">Draft</span>
+          }
+        </div>
+        @if (release.description) {
+        <p class="text-base-content/70 mt-1.5 line-clamp-2 text-sm">{{ release.description }}</p>
+        }
+        <p class="text-base-content/60 mt-1.5 text-sm">
+          <span class="text-base-content/80 font-medium">{{ release.author.username || release.author.name }}</span>
+          <span class="mx-1">·</span>
+          @if (release.publishedAt) {
+          <span>{{ release.publishedAt | relativeTime }}</span>
+          } @else {
+          <span>{{ release.createdAt | relativeTime }}</span>
+          }
+        </p>
+      </div>
+      @if (canEdit()) {
+      <button
+        type="button"
+        class="btn btn-ghost btn-xs text-error shrink-0"
+        (click)="deleteRelease(release)"
+        [disabled]="actionLoading()"
+      >
+        Delete
+      </button>
+      }
+    </div>
+    }
+  </div>
+  }
+</section>

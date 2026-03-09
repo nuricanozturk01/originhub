@@ -20,6 +20,8 @@ import { LucideAngularModule } from 'lucide-angular';
 import { RepoService } from '../../../core/repo/services/repo.service';
 import { RepoContextService } from '../../../core/repo/services/repo-context.service';
 import { PullRequestService } from '../../../core/pull-request/services/pull-request.service';
+import { TagService } from '../../../core/tag/services/tag.service';
+import { ReleaseService } from '../../../core/release/services/release.service';
 import type { RepoInfo } from '../../../domain/repository/models/repo-info.model';
 
 @Component({
@@ -34,6 +36,8 @@ export class RepoLayoutComponent {
   private readonly repoService = inject(RepoService);
   readonly repoContext = inject(RepoContextService);
   private readonly prService = inject(PullRequestService);
+  private readonly tagService = inject(TagService);
+  private readonly releaseService = inject(ReleaseService);
 
   readonly repo = signal<RepoInfo | null>(null);
   readonly loading = signal(true);
@@ -41,6 +45,8 @@ export class RepoLayoutComponent {
   readonly owner = computed(() => this.route.snapshot.paramMap.get('owner') ?? '');
   readonly repoName = computed(() => this.route.snapshot.paramMap.get('repo') ?? '');
   readonly prCount = signal(0);
+  readonly tagCount = signal(0);
+  readonly releaseCount = signal(0);
 
   constructor() {
     this.route.params.subscribe(() => this.loadRepo());
@@ -52,13 +58,17 @@ export class RepoLayoutComponent {
     if (!owner || !repo) return;
     this.loading.set(true);
     try {
-      const [repoData, prList] = await Promise.all([
+      const [repoData, prList, tagList, releaseList] = await Promise.all([
         this.repoService.getRepo(owner, repo),
         this.prService.getPullRequests(owner, repo, 'OPEN').catch(() => []),
+        this.tagService.getAll(owner, repo).catch(() => []),
+        this.releaseService.getAll(owner, repo).catch(() => []),
       ]);
       this.repo.set(repoData);
       this.repoContext.repo.set(repoData);
       this.prCount.set(prList.length);
+      this.tagCount.set(tagList.length);
+      this.releaseCount.set(releaseList.length);
     } catch {
       this.repo.set(null);
       this.repoContext.repo.set(null);

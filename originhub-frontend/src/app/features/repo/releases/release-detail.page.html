@@ -1,0 +1,78 @@
+<div class="mx-auto max-w-3xl">
+  @if (loading()) {
+  <div class="flex justify-center py-24">
+    <span class="loading loading-spinner loading-lg text-primary"></span>
+  </div>
+  } @else if (error()) {
+  <div class="alert alert-error">
+    <span>{{ error() }}</span>
+  </div>
+  } @else if (release(); as rel) {
+  <div class="repo-panel overflow-hidden">
+    <div class="flex items-center gap-3 px-4 py-3">
+      <a [routerLink]="['/', owner(), repoName(), 'releases']" class="btn btn-ghost btn-sm gap-1">
+        <lucide-icon name="arrowLeft" class="size-4"></lucide-icon>
+        Releases
+      </a>
+    </div>
+
+    <div class="p-6">
+      <div class="mb-4 flex flex-wrap items-start gap-3">
+        <div class="bg-primary/10 text-primary flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+          <lucide-icon name="package" class="size-6"></lucide-icon>
+        </div>
+        <div class="min-w-0 flex-1">
+          <h1 class="text-base-content text-2xl font-bold">{{ rel.title }}</h1>
+          <div class="mt-1.5 flex flex-wrap items-center gap-2">
+            <span class="badge-pill badge-pill--neutral font-mono text-xs">{{ rel.tagName }}</span>
+            @if (rel.isPrerelease) {
+            <span class="badge-pill badge-pill--warning">Pre-release</span>
+            } @if (rel.isDraft) {
+            <span class="badge-pill badge-pill--draft">Draft</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="text-base-content/60 mb-6 flex flex-wrap gap-4 text-sm">
+        <span class="flex items-center gap-1.5">
+          <lucide-icon name="user" class="size-4"></lucide-icon>
+          <span class="text-base-content/80 font-medium">{{ rel.author.username || rel.author.name }}</span>
+        </span>
+        @if (rel.publishedAt) {
+        <span class="flex items-center gap-1.5">
+          <lucide-icon name="gitCommit" class="size-4"></lucide-icon>
+          Published {{ rel.publishedAt | relativeTime }}
+        </span>
+        } @else {
+        <span class="flex items-center gap-1.5">
+          <lucide-icon name="gitCommit" class="size-4"></lucide-icon>
+          Created {{ rel.createdAt | relativeTime }}
+        </span>
+        }
+      </div>
+
+      @if (rel.description) {
+      <div class="border-base-300 rounded-lg border p-4">
+        <p class="text-base-content/80 whitespace-pre-wrap text-sm leading-relaxed">{{ rel.description }}</p>
+      </div>
+      } @else {
+      <div class="text-base-content/50 rounded-lg border border-dashed p-8 text-center text-sm">
+        No description provided for this release.
+      </div>
+      }
+
+      @if (canEdit()) {
+      <div class="mt-6 flex justify-end gap-2">
+        <a
+          [routerLink]="['/', owner(), repoName(), 'releases']"
+          class="btn btn-ghost btn-sm"
+        >
+          Back to releases
+        </a>
+      </div>
+      }
+    </div>
+  </div>
+  }
+</div>

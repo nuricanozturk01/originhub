@@ -60,6 +60,28 @@
             Branches
           </a>
           <a
+            [routerLink]="['/', owner(), repoName(), 'tags']"
+            routerLinkActive="tab-active"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="tag" class="size-4"></lucide-icon>
+            Tags
+            @if (tagCount() > 0) {
+              <span class="badge-pill badge-pill--primary">{{ tagCount() }}</span>
+            }
+          </a>
+          <a
+            [routerLink]="['/', owner(), repoName(), 'releases']"
+            routerLinkActive="tab-active"
+            class="tab gap-2 rounded-lg"
+          >
+            <lucide-icon name="package" class="size-4"></lucide-icon>
+            Releases
+            @if (releaseCount() > 0) {
+              <span class="badge-pill badge-pill--primary">{{ releaseCount() }}</span>
+            }
+          </a>
+          <a
             [routerLink]="['/', owner(), repoName(), 'commits', repo()?.defaultBranch ?? 'main']"
             routerLinkActive="tab-active"
             [routerLinkActiveOptions]="{ paths: 'subset', matrixParams: 'ignored' }"

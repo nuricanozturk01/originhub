@@ -1,0 +1,97 @@
+<div class="mx-auto max-w-2xl">
+  <div class="repo-panel overflow-hidden">
+    <div class="flex items-center gap-3 px-4 py-3">
+      <a [routerLink]="['/', owner(), repoName(), 'releases']" class="btn btn-ghost btn-sm gap-1">
+        <lucide-icon name="arrowLeft" class="size-4"></lucide-icon>
+        Releases
+      </a>
+      <h2 class="text-base-content text-lg font-semibold">New release</h2>
+    </div>
+
+    @if (error()) {
+    <div class="alert alert-error mx-4 mb-4">
+      <span>{{ error() }}</span>
+    </div>
+    }
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-5 p-4">
+      <div class="form-control">
+        <label class="label" for="release-tag">
+          <span class="label-text font-medium">Tag</span>
+        </label>
+        <select id="release-tag" formControlName="tagName" class="select select-bordered w-full">
+          <option value="" disabled>Select a tag...</option>
+          @for (tag of tags(); track tag.name) {
+          <option [value]="tag.name">{{ tag.name }}</option>
+          }
+        </select>
+        @if (form.get('tagName')?.invalid && form.get('tagName')?.touched) {
+        <span class="label">
+          <span class="label-text-alt text-error">Tag is required</span>
+        </span>
+        }
+      </div>
+
+      <div class="form-control">
+        <label class="label" for="release-title">
+          <span class="label-text font-medium">Release title</span>
+        </label>
+        <input
+          id="release-title"
+          type="text"
+          formControlName="title"
+          placeholder="Release title"
+          class="input input-bordered w-full"
+        />
+        @if (form.get('title')?.invalid && form.get('title')?.touched) {
+        <span class="label">
+          <span class="label-text-alt text-error">Title is required (max 255 chars)</span>
+        </span>
+        }
+      </div>
+
+      <div class="form-control">
+        <label class="label" for="release-description">
+          <span class="label-text font-medium">Description <span class="text-base-content/50">(optional)</span></span>
+        </label>
+        <textarea
+          id="release-description"
+          formControlName="description"
+          placeholder="Describe this release..."
+          class="textarea textarea-bordered w-full"
+          rows="6"
+        ></textarea>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start gap-3">
+            <input type="checkbox" formControlName="isPrerelease" class="checkbox checkbox-primary checkbox-sm" />
+            <div>
+              <span class="label-text font-medium">Pre-release</span>
+              <p class="text-base-content/60 text-xs">Mark this as a pre-release version</p>
+            </div>
+          </label>
+        </div>
+        <div class="form-control">
+          <label class="label cursor-pointer justify-start gap-3">
+            <input type="checkbox" formControlName="isDraft" class="checkbox checkbox-primary checkbox-sm" />
+            <div>
+              <span class="label-text font-medium">Draft</span>
+              <p class="text-base-content/60 text-xs">Save as draft — not published yet</p>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <a [routerLink]="['/', owner(), repoName(), 'releases']" class="btn btn-ghost">Cancel</a>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading()">
+          @if (loading()) {
+          <span class="loading loading-spinner loading-sm"></span>
+          } @else { Publish release }
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
