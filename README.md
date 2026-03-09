@@ -175,7 +175,7 @@ server"*, OriginHub is for you.
 
 ## 🚀 Getting Started
 
-> 📖 Full documentation: **[originhub.nuricanozturk.com/docs](https://originhub.nuricanozturk.com/docs)**
+> 📖 Full documentation: **[originhub.nuricanozturk.com/docs](https://originhub.nuricanozturk.com/docs)** [Only Documentation. Not deployed to cloud]
 
 ### Option 1 — One-liner *(easiest)*
 
