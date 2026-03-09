@@ -219,13 +219,24 @@ docker compose -f docker-compose.dev.yml up -d
 ```
 
 ```bash
+docker network create originhub
+
+docker run -d \
+  --name originhub-postgres \
+  --network originhub \
+  -e POSTGRES_DB=originhub \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=admin123 \
+  postgres:17
+
 docker run -d \
   --name originhub \
+  --network originhub \
   -p 8080:8080 \
   -p 2222:2222 \
-  -e SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/originhub \
-  -e SPRING_DATASOURCE_USERNAME=originhub \
-  -e SPRING_DATASOURCE_PASSWORD=yourpassword \
+  -e SPRING_DATASOURCE_URL=jdbc:postgresql://originhub-postgres:5432/originhub \
+  -e SPRING_DATASOURCE_USERNAME=admin \
+  -e SPRING_DATASOURCE_PASSWORD=admin123 \
   -e ORIGINHUB_JWT_SECRET=your256bithexsecret \
   -e ORIGINHUB_GIT_REPO__ROOT=/data/repos \
   -e SPRING_PROFILES_ACTIVE=os \
