@@ -58,17 +58,17 @@ export class RepoLayoutComponent {
     if (!owner || !repo) return;
     this.loading.set(true);
     try {
-      const [repoData, prList, tagList, releaseList] = await Promise.all([
+      const [repoData, prList, tagPage, releasePage] = await Promise.all([
         this.repoService.getRepo(owner, repo),
         this.prService.getPullRequests(owner, repo, 'OPEN').catch(() => []),
-        this.tagService.getAll(owner, repo).catch(() => []),
-        this.releaseService.getAll(owner, repo).catch(() => []),
+        this.tagService.getAll(owner, repo, 0, 1).catch(() => null),
+        this.releaseService.getAll(owner, repo, 0, 1).catch(() => null),
       ]);
       this.repo.set(repoData);
       this.repoContext.repo.set(repoData);
       this.prCount.set(prList.length);
-      this.tagCount.set(tagList.length);
-      this.releaseCount.set(releaseList.length);
+      this.tagCount.set(tagPage?.totalItems ?? 0);
+      this.releaseCount.set(releasePage?.totalItems ?? 0);
     } catch {
       this.repo.set(null);
       this.repoContext.repo.set(null);

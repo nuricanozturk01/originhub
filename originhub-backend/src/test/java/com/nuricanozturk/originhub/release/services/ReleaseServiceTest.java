@@ -42,6 +42,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("ReleaseService unit tests")
@@ -55,38 +57,38 @@ class ReleaseServiceTest {
   @InjectMocks private ReleaseService releaseService;
 
   @Test
-  @DisplayName("getAll returns list of ReleaseInfo")
-  void getAll_returnsReleaseInfoList() {
-    Repo repo = createRepo();
-    Tenant author = createTenant();
-    Release release = createRelease(repo, author);
-    ReleaseInfo releaseInfo = createReleaseInfo(release);
+  @DisplayName("getAll returns paged list of ReleaseInfo")
+  void getAll_returnsPagedReleaseInfoList() {
+    final Repo repo = createRepo();
+    final Tenant author = createTenant();
+    final Release release = createRelease(repo, author);
+    final ReleaseInfo releaseInfo = createReleaseInfo(release);
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(releaseRepository.findAllByRepoIdOrderByCreatedAtDesc(repo.getId()))
-        .thenReturn(List.of(release));
-    when(releaseMapper.toInfo(any(), any())).thenReturn(releaseInfo);
+    when(this.releaseRepository.findAllByRepoIdOrderByCreatedAtDesc(any(UUID.class), any()))
+        .thenReturn(new PageImpl<>(List.of(release), PageRequest.of(0, 20), 1));
+    when(this.releaseMapper.toInfo(any(), any())).thenReturn(releaseInfo);
 
-    var result = releaseService.getAll("alice", "my-repo");
+    final var result = this.releaseService.getAll("alice", "my-repo", 0, 20);
 
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).tagName()).isEqualTo("v1.0.0");
-    assertThat(result.get(0).title()).isEqualTo("Release v1.0.0");
+    assertThat(result.items()).hasSize(1);
+    assertThat(result.items().get(0).tagName()).isEqualTo("v1.0.0");
+    assertThat(result.totalItems()).isEqualTo(1L);
   }
 
   @Test
   @DisplayName("get throws ItemNotFoundException when release not found")
   void get_throwsItemNotFoundException_whenNotFound() {
-    Repo repo = createRepo();
-    UUID releaseId = UUID.randomUUID();
+    final Repo repo = createRepo();
+    final UUID releaseId = UUID.randomUUID();
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
+    when(this.releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
         .thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> releaseService.get("alice", "my-repo", releaseId))
+    assertThatThrownBy(() -> this.releaseService.get("alice", "my-repo", releaseId))
         .isInstanceOf(ItemNotFoundException.class)
         .hasMessageContaining("releaseNotFound");
   }
@@ -94,67 +96,68 @@ class ReleaseServiceTest {
   @Test
   @DisplayName("create saves release and returns ReleaseInfo when valid")
   void create_savesRelease_whenValid() {
-    Repo repo = createRepo();
-    Tenant author = createTenant();
-    UUID authorId = author.getId();
-    ReleaseForm form = new ReleaseForm("v1.0.0", "Release v1.0.0", null, false, false);
-    Release release = createRelease(repo, author);
-    ReleaseInfo releaseInfo = createReleaseInfo(release);
+    final Repo repo = createRepo();
+    final Tenant author = createTenant();
+    final UUID authorId = author.getId();
+    final ReleaseForm form = new ReleaseForm("v1.0.0", "Release v1.0.0", null, false, false);
+    final Release release = createRelease(repo, author);
+    final ReleaseInfo releaseInfo = createReleaseInfo(release);
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(releaseRepository.existsByRepoIdAndTagName(repo.getId(), "v1.0.0")).thenReturn(false);
-    when(tenantRepository.findById(authorId)).thenReturn(Optional.of(author));
-    when(releaseMapper.buildRelease(any(), any(), any())).thenReturn(release);
-    when(releaseRepository.save(release)).thenReturn(release);
-    when(releaseMapper.toInfo(any(), any())).thenReturn(releaseInfo);
+    when(this.releaseRepository.existsByRepoIdAndTagName(repo.getId(), "v1.0.0"))
+        .thenReturn(false);
+    when(this.tenantRepository.findById(authorId)).thenReturn(Optional.of(author));
+    when(this.releaseMapper.buildRelease(any(), any(), any())).thenReturn(release);
+    when(this.releaseRepository.save(release)).thenReturn(release);
+    when(this.releaseMapper.toInfo(any(), any())).thenReturn(releaseInfo);
 
-    var result = releaseService.create("alice", "my-repo", authorId, form);
+    final var result = this.releaseService.create("alice", "my-repo", authorId, form);
 
     assertThat(result).isNotNull();
     assertThat(result.tagName()).isEqualTo("v1.0.0");
-    verify(releaseRepository).save(release);
+    verify(this.releaseRepository).save(release);
   }
 
   @Test
   @DisplayName("delete deletes release when found")
   void delete_deletesRelease_whenFound() {
-    Repo repo = createRepo();
-    Tenant author = createTenant();
-    Release release = createRelease(repo, author);
-    UUID releaseId = release.getId();
+    final Repo repo = createRepo();
+    final Tenant author = createTenant();
+    final Release release = createRelease(repo, author);
+    final UUID releaseId = release.getId();
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
+    when(this.releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
         .thenReturn(Optional.of(release));
 
-    releaseService.delete("alice", "my-repo", releaseId);
+    this.releaseService.delete("alice", "my-repo", releaseId);
 
-    verify(releaseRepository).delete(release);
+    verify(this.releaseRepository).delete(release);
   }
 
   @Test
   @DisplayName("delete throws ItemNotFoundException when release not found")
   void delete_throwsItemNotFoundException_whenNotFound() {
-    Repo repo = createRepo();
-    UUID releaseId = UUID.randomUUID();
+    final Repo repo = createRepo();
+    final UUID releaseId = UUID.randomUUID();
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
+    when(this.releaseRepository.findByRepoIdAndId(repo.getId(), releaseId))
         .thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> releaseService.delete("alice", "my-repo", releaseId))
+    assertThatThrownBy(() -> this.releaseService.delete("alice", "my-repo", releaseId))
         .isInstanceOf(ItemNotFoundException.class)
         .hasMessageContaining("releaseNotFound");
   }
 
   private static Repo createRepo() {
-    Tenant owner = new Tenant();
+    final Tenant owner = new Tenant();
     owner.setId(UUID.randomUUID());
     owner.setUsername("alice");
-    Repo repo = new Repo();
+    final Repo repo = new Repo();
     repo.setId(UUID.randomUUID());
     repo.setOwner(owner);
     repo.setName("my-repo");
@@ -163,7 +166,7 @@ class ReleaseServiceTest {
   }
 
   private static Tenant createTenant() {
-    Tenant tenant = new Tenant();
+    final Tenant tenant = new Tenant();
     tenant.setId(UUID.randomUUID());
     tenant.setUsername("alice");
     tenant.setEmail("alice@example.com");
@@ -171,8 +174,8 @@ class ReleaseServiceTest {
     return tenant;
   }
 
-  private static Release createRelease(Repo repo, Tenant author) {
-    Release release = new Release();
+  private static Release createRelease(final Repo repo, final Tenant author) {
+    final Release release = new Release();
     release.setId(UUID.randomUUID());
     release.setRepo(repo);
     release.setTagName("v1.0.0");
@@ -184,8 +187,8 @@ class ReleaseServiceTest {
     return release;
   }
 
-  private static ReleaseInfo createReleaseInfo(Release release) {
-    AuthorInfo authorInfo =
+  private static ReleaseInfo createReleaseInfo(final Release release) {
+    final AuthorInfo authorInfo =
         new AuthorInfo(
             release.getAuthor().getDisplayName(),
             release.getAuthor().getEmail(),

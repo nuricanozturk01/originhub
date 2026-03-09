@@ -83,5 +83,29 @@
     </div>
     }
   </div>
+
+  @if (totalPages() > 1) {
+  <div class="mt-6 flex justify-center gap-2 pb-4">
+    <button
+      type="button"
+      class="btn btn-sm btn-outline"
+      [disabled]="!hasPrevious()"
+      (click)="goToPage(currentPage() - 1)"
+    >
+      Previous
+    </button>
+    <span class="text-base-content/70 flex items-center px-4 text-sm">
+      Page {{ currentPage() + 1 }} of {{ totalPages() }}
+    </span>
+    <button
+      type="button"
+      class="btn btn-sm btn-outline"
+      [disabled]="!hasNext()"
+      (click)="goToPage(currentPage() + 1)"
+    >
+      Next
+    </button>
+  </div>
+  }
   }
 </section>

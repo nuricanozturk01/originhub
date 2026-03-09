@@ -62,8 +62,8 @@ export class NewReleasePage {
     const repo = this.repoName();
     if (!owner || !repo) return;
     try {
-      const data = await this.tagService.getAll(owner, repo);
-      this.tags.set(data);
+      const data = await this.tagService.getAll(owner, repo, 0, 100);
+      this.tags.set(data.items);
     } catch {
       this.tags.set([]);
     }

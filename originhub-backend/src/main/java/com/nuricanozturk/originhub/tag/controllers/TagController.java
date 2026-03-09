@@ -16,12 +16,12 @@
 package com.nuricanozturk.originhub.tag.controllers;
 
 import com.nuricanozturk.originhub.shared.auth.services.JwtUtils;
+import com.nuricanozturk.originhub.shared.commit.dtos.PagedResult;
 import com.nuricanozturk.originhub.tag.dtos.TagForm;
 import com.nuricanozturk.originhub.tag.dtos.TagInfo;
-import com.nuricanozturk.originhub.tag.services.TagService;
+import com.nuricanozturk.originhub.tag.services.TagNonTxService;
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -41,15 +42,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class TagController {
 
-  private final @NonNull TagService tagService;
+  private final @NonNull TagNonTxService tagService;
   private final @NonNull JwtUtils tokenService;
 
   @GetMapping
-  public @NonNull ResponseEntity<List<TagInfo>> getAll(
+  public @NonNull ResponseEntity<PagedResult<TagInfo>> getAll(
       @PathVariable final @NonNull String owner,
-      @PathVariable final @NonNull String repo) {
+      @PathVariable final @NonNull String repo,
+      @RequestParam(defaultValue = "0") final int page,
+      @RequestParam(defaultValue = "20") final int size) {
 
-    final var tags = this.tagService.getAll(owner, repo);
+    final var tags = this.tagService.getAll(owner, repo, page, size);
 
     return ResponseEntity.ok(tags);
   }

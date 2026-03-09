@@ -20,8 +20,8 @@ import com.nuricanozturk.originhub.release.dtos.ReleaseInfo;
 import com.nuricanozturk.originhub.release.dtos.ReleaseUpdateForm;
 import com.nuricanozturk.originhub.release.services.ReleaseService;
 import com.nuricanozturk.originhub.shared.auth.services.JwtUtils;
+import com.nuricanozturk.originhub.shared.commit.dtos.PagedResult;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -47,11 +48,13 @@ public class ReleaseController {
   private final @NonNull JwtUtils tokenService;
 
   @GetMapping
-  public @NonNull ResponseEntity<List<ReleaseInfo>> getAll(
+  public @NonNull ResponseEntity<PagedResult<ReleaseInfo>> getAll(
       @PathVariable final @NonNull String owner,
-      @PathVariable final @NonNull String repo) {
+      @PathVariable final @NonNull String repo,
+      @RequestParam(defaultValue = "0") final int page,
+      @RequestParam(defaultValue = "20") final int size) {
 
-    final var releases = this.releaseService.getAll(owner, repo);
+    final var releases = this.releaseService.getAll(owner, repo, page, size);
 
     return ResponseEntity.ok(releases);
   }

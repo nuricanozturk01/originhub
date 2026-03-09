@@ -16,17 +16,18 @@
 package com.nuricanozturk.originhub.tag.repositories;
 
 import com.nuricanozturk.originhub.tag.entities.Tag;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TagRepository extends JpaRepository<Tag, UUID> {
 
-  @NonNull List<Tag> findAllByRepoIdOrderByCreatedAtDesc(@NonNull UUID repoId);
+  @NonNull Page<Tag> findAllByRepoId(@NonNull UUID repoId, @NonNull Pageable pageable);
 
   @NonNull Optional<Tag> findByRepoIdAndName(@NonNull UUID repoId, @NonNull String name);
 

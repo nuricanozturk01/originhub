@@ -15,10 +15,11 @@
 ///
 
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { TagInfo } from '../../../domain/tag/models/tag-info.model';
+import type { PagedResult } from '../../../domain/commit/models/paged-result.model';
 
 @Injectable({ providedIn: 'root' })
 export class TagService {
@@ -28,8 +29,9 @@ export class TagService {
     return `${environment.apiUrl}/api/repos/${owner}/${repo}/tags`;
   }
 
-  getAll(owner: string, repo: string): Promise<TagInfo[]> {
-    return firstValueFrom(this.http.get<TagInfo[]>(this.base(owner, repo)));
+  getAll(owner: string, repo: string, page = 0, size = 20): Promise<PagedResult<TagInfo>> {
+    const params = new HttpParams().set('page', String(page)).set('size', String(size));
+    return firstValueFrom(this.http.get<PagedResult<TagInfo>>(this.base(owner, repo), { params }));
   }
 
   createTag(owner: string, repo: string, form: { name: string; sha: string; message?: string }): Promise<TagInfo> {

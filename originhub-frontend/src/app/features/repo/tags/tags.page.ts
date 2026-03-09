@@ -15,7 +15,7 @@
 ///
 
 import { Component, inject, signal, computed } from '@angular/core';
-import { RouterLink, ActivatedRoute } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
@@ -34,6 +34,7 @@ import type { TagInfo } from '../../../domain/tag/models/tag-info.model';
 })
 export class TagsPage {
   private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
   private readonly tagService = inject(TagService);
   private readonly repoContext = inject(RepoContextService);
@@ -45,10 +46,17 @@ export class TagsPage {
   readonly error = signal<string | null>(null);
   readonly createModalOpen = signal(false);
   readonly actionLoading = signal(false);
+  readonly totalPages = signal(0);
+  readonly hasNext = signal(false);
+  readonly hasPrevious = signal(false);
 
   readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
   readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
   readonly canEdit = this.repoContext.canEdit;
+  readonly currentPage = computed(() => {
+    const p = this.route.snapshot.queryParamMap.get('page');
+    return p ? parseInt(p, 10) : 0;
+  });
 
   readonly createForm = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9._\-/]+$/)]],
@@ -57,7 +65,7 @@ export class TagsPage {
   });
 
   constructor() {
-    this.loadTags();
+    this.route.queryParamMap.subscribe(() => this.loadTags());
   }
 
   async loadTags(): Promise<void> {
@@ -67,14 +75,21 @@ export class TagsPage {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const data = await this.tagService.getAll(owner, repo);
-      this.tags.set(data);
+      const data = await this.tagService.getAll(owner, repo, this.currentPage(), 20);
+      this.tags.set(data.items);
+      this.totalPages.set(data.totalPages);
+      this.hasNext.set(data.hasNext);
+      this.hasPrevious.set(data.hasPrevious);
     } catch {
       this.error.set('Failed to load tags');
       this.tags.set([]);
     } finally {
       this.loading.set(false);
     }
+  }
+
+  goToPage(p: number): void {
+    this.router.navigate([], { queryParams: { page: p }, relativeTo: this.route });
   }
 
   openCreateModal(): void {

@@ -17,10 +17,10 @@ package com.nuricanozturk.originhub.tag.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemNotFoundException;
-import com.nuricanozturk.originhub.shared.git.provider.GitProvider;
 import com.nuricanozturk.originhub.shared.repo.entities.Repo;
 import com.nuricanozturk.originhub.shared.repo.repositories.RepoRepository;
 import com.nuricanozturk.originhub.shared.tenant.entities.Tenant;
@@ -37,74 +37,84 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("TagService unit tests")
+@DisplayName("TagTxService unit tests")
 class TagServiceTest {
 
   @Mock private TagRepository tagRepository;
   @Mock private RepoRepository repoRepository;
   @Mock private TenantRepository tenantRepository;
-  @Mock private GitProvider gitProvider;
 
-  @InjectMocks private TagService tagService;
+  @InjectMocks private TagTxService tagTxService;
 
   @Test
-  @DisplayName("getAll returns list of TagInfo when tags exist")
-  void getAll_returnsTagInfoList_whenTagsExist() {
-    Repo repo = createRepo();
-    Tenant tagger = createTenant();
-    Tag tag = createTag(repo, tagger);
+  @DisplayName("getAll returns paged TagInfo when tags exist")
+  void getAll_returnsPagedResult_whenTagsExist() {
+    final Repo repo = createRepo();
+    final Tenant tagger = createTenant();
+    final Tag tag = createTag(repo, tagger);
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(tagRepository.findAllByRepoIdOrderByCreatedAtDesc(repo.getId()))
-        .thenReturn(List.of(tag));
+    when(this.tagRepository.findAllByRepoId(any(UUID.class), any()))
+        .thenReturn(new PageImpl<>(List.of(tag), PageRequest.of(0, 20), 1));
 
-    var result = tagService.getAll("alice", "my-repo");
+    final var result = this.tagTxService.getAll("alice", "my-repo", 0, 20);
 
-    assertThat(result).hasSize(1);
-    assertThat(result.get(0).name()).isEqualTo("v1.0.0");
-    assertThat(result.get(0).sha()).isEqualTo("abc1234567890abc1234567890abc1234567890ab");
-    assertThat(result.get(0).shortSha()).isEqualTo("abc1234");
-    assertThat(result.get(0).tagger().username()).isEqualTo("alice");
+    assertThat(result.items()).hasSize(1);
+    assertThat(result.items().get(0).name()).isEqualTo("v1.0.0");
+    assertThat(result.items().get(0).shortSha()).isEqualTo("abc1234");
+    assertThat(result.totalItems()).isEqualTo(1L);
   }
 
   @Test
-  @DisplayName("getAll returns empty list when no tags exist")
-  void getAll_returnsEmptyList_whenNoTags() {
-    Repo repo = createRepo();
+  @DisplayName("getAll returns empty paged result when no tags exist")
+  void getAll_returnsEmptyPagedResult_whenNoTags() {
+    final Repo repo = createRepo();
 
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
         .thenReturn(Optional.of(repo));
-    when(tagRepository.findAllByRepoIdOrderByCreatedAtDesc(repo.getId()))
-        .thenReturn(List.of());
+    when(this.tagRepository.findAllByRepoId(any(UUID.class), any()))
+        .thenReturn(new PageImpl<>(List.of(), PageRequest.of(0, 20), 0));
 
-    var result = tagService.getAll("alice", "my-repo");
+    final var result = this.tagTxService.getAll("alice", "my-repo", 0, 20);
 
-    assertThat(result).isEmpty();
+    assertThat(result.items()).isEmpty();
+    assertThat(result.totalItems()).isZero();
   }
 
   @Test
-  @DisplayName("delete throws ItemNotFoundException when tag not found")
-  void delete_throwsItemNotFoundException_whenTagNotFound() {
-    Repo repo = createRepo();
-
-    when(repoRepository.findByOwnerUsernameAndName("alice", "my-repo"))
-        .thenReturn(Optional.of(repo));
-    when(tagRepository.findByRepoIdAndName(repo.getId(), "v1.0.0"))
+  @DisplayName("findRepoByOwnerAndRepoName throws ItemNotFoundException when repo not found")
+  void findRepo_throwsItemNotFoundException_whenNotFound() {
+    when(this.repoRepository.findByOwnerUsernameAndName("alice", "missing"))
         .thenReturn(Optional.empty());
 
-    assertThatThrownBy(() -> tagService.delete("alice", "my-repo", "v1.0.0"))
+    assertThatThrownBy(() -> this.tagTxService.findRepoByOwnerAndRepoName("alice", "missing"))
+        .isInstanceOf(ItemNotFoundException.class)
+        .hasMessageContaining("repoNotFound");
+  }
+
+  @Test
+  @DisplayName("findTagByRepoIdAndName throws ItemNotFoundException when tag not found")
+  void findTagByRepoIdAndName_throwsItemNotFoundException_whenNotFound() {
+    final UUID repoId = UUID.randomUUID();
+
+    when(this.tagRepository.findByRepoIdAndName(repoId, "v1.0.0"))
+        .thenReturn(Optional.empty());
+
+    assertThatThrownBy(() -> this.tagTxService.findTagByRepoIdAndName(repoId, "v1.0.0"))
         .isInstanceOf(ItemNotFoundException.class)
         .hasMessageContaining("tagNotFound");
   }
 
   private static Repo createRepo() {
-    Tenant owner = new Tenant();
+    final Tenant owner = new Tenant();
     owner.setId(UUID.randomUUID());
     owner.setUsername("alice");
-    Repo repo = new Repo();
+    final Repo repo = new Repo();
     repo.setId(UUID.randomUUID());
     repo.setOwner(owner);
     repo.setName("my-repo");
@@ -113,7 +123,7 @@ class TagServiceTest {
   }
 
   private static Tenant createTenant() {
-    Tenant tenant = new Tenant();
+    final Tenant tenant = new Tenant();
     tenant.setId(UUID.randomUUID());
     tenant.setUsername("alice");
     tenant.setEmail("alice@example.com");
@@ -121,8 +131,8 @@ class TagServiceTest {
     return tenant;
   }
 
-  private static Tag createTag(Repo repo, Tenant tagger) {
-    Tag tag = new Tag();
+  private static Tag createTag(final Repo repo, final Tenant tagger) {
+    final Tag tag = new Tag();
     tag.setId(UUID.randomUUID());
     tag.setRepo(repo);
     tag.setName("v1.0.0");

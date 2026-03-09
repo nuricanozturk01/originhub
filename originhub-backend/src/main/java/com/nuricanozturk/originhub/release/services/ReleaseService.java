@@ -22,6 +22,7 @@ import com.nuricanozturk.originhub.release.entities.Release;
 import com.nuricanozturk.originhub.release.mappers.ReleaseMapper;
 import com.nuricanozturk.originhub.release.repositories.ReleaseRepository;
 import com.nuricanozturk.originhub.shared.commit.dtos.AuthorInfo;
+import com.nuricanozturk.originhub.shared.commit.dtos.PagedResult;
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemAlreadyExistsException;
 import com.nuricanozturk.originhub.shared.errorhandling.exceptions.ItemNotFoundException;
 import com.nuricanozturk.originhub.shared.repo.entities.Repo;
@@ -29,12 +30,13 @@ import com.nuricanozturk.originhub.shared.repo.repositories.RepoRepository;
 import com.nuricanozturk.originhub.shared.tenant.entities.Tenant;
 import com.nuricanozturk.originhub.shared.tenant.repositories.TenantRepository;
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,15 +51,26 @@ public class ReleaseService {
   private final @NonNull TenantRepository tenantRepository;
   private final @NonNull ReleaseMapper releaseMapper;
 
-  public @NonNull List<ReleaseInfo> getAll(
-      final @NonNull String owner, final @NonNull String repoName) {
+  public @NonNull PagedResult<ReleaseInfo> getAll(
+      final @NonNull String owner, final @NonNull String repoName, final int page, final int size) {
 
     final var repo = this.findRepo(owner, repoName);
-    final var releases =
-        this.releaseRepository.findAllByRepoIdOrderByCreatedAtDesc(repo.getId());
-    return releases.stream()
-        .map(r -> this.releaseMapper.toInfo(r, this.toAuthorInfo(r.getAuthor())))
-        .toList();
+    final var pageable =
+        PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+    final var releasePage =
+        this.releaseRepository.findAllByRepoIdOrderByCreatedAtDesc(repo.getId(), pageable);
+    final var items =
+        releasePage.getContent().stream()
+            .map(r -> this.releaseMapper.toInfo(r, this.toAuthorInfo(r.getAuthor())))
+            .toList();
+    return new PagedResult<>(
+        items,
+        page,
+        size,
+        releasePage.getTotalElements(),
+        releasePage.getTotalPages(),
+        releasePage.hasNext(),
+        releasePage.hasPrevious());
   }
 
   public @NonNull ReleaseInfo get(

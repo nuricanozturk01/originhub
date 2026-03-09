@@ -16,17 +16,19 @@
 package com.nuricanozturk.originhub.release.repositories;
 
 import com.nuricanozturk.originhub.release.entities.Release;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.NonNull;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ReleaseRepository extends JpaRepository<Release, UUID> {
 
-  @NonNull List<Release> findAllByRepoIdOrderByCreatedAtDesc(@NonNull UUID repoId);
+  @NonNull Page<Release> findAllByRepoIdOrderByCreatedAtDesc(
+      @NonNull UUID repoId, @NonNull Pageable pageable);
 
   @NonNull Optional<Release> findByRepoIdAndId(@NonNull UUID repoId, @NonNull UUID id);
 

@@ -15,11 +15,12 @@
 ///
 
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import type { ReleaseInfo } from '../../../domain/release/models/release-info.model';
 import type { ReleaseForm, ReleaseUpdateForm } from '../../../domain/release/models/release-form.model';
+import type { PagedResult } from '../../../domain/commit/models/paged-result.model';
 
 @Injectable({ providedIn: 'root' })
 export class ReleaseService {
@@ -29,8 +30,11 @@ export class ReleaseService {
     return `${environment.apiUrl}/api/repos/${owner}/${repo}/releases`;
   }
 
-  getAll(owner: string, repo: string): Promise<ReleaseInfo[]> {
-    return firstValueFrom(this.http.get<ReleaseInfo[]>(this.base(owner, repo)));
+  getAll(owner: string, repo: string, page = 0, size = 20): Promise<PagedResult<ReleaseInfo>> {
+    const params = new HttpParams().set('page', String(page)).set('size', String(size));
+    return firstValueFrom(
+      this.http.get<PagedResult<ReleaseInfo>>(this.base(owner, repo), { params }),
+    );
   }
 
   get(owner: string, repo: string, releaseId: string): Promise<ReleaseInfo> {
