@@ -237,9 +237,9 @@ docker run -d \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://originhub-postgres:5432/originhub \
   -e SPRING_DATASOURCE_USERNAME=admin \
   -e SPRING_DATASOURCE_PASSWORD=admin123 \
-  -e ORIGINHUB_JWT_SECRET=your256bithexsecret \
+  -e ORIGINHUB_JWT_SECRET=995a44f7111b23ebed8ad37e8b9cbe380dd5022f8b3bf67b16c8e223456f74a0 \
   -e ORIGINHUB_GIT_REPO__ROOT=/data/repos \
-  -e SPRING_PROFILES_ACTIVE=os \
+  -e SPRING_PROFILES_ACTIVE=prod \
   -v originhub-repos:/data/repos \
   repo.repsy.io/nuricanozturk/originhub/originhub-os:latest
 ```
