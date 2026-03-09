@@ -1,0 +1,74 @@
+<div class="space-y-6">
+  <div role="tablist" class="tabs tabs-boxed mb-4">
+    <button type="button" class="tab" [class.tab-active]="activeTab() === 'general'" (click)="setTab('general')">
+      General
+    </button>
+    <button type="button" class="tab" [class.tab-active]="activeTab() === 'danger'" (click)="setTab('danger')">
+      Danger Zone
+    </button>
+  </div>
+
+  @if (activeTab() === 'general') {
+  <div class="card bg-base-100 border-base-300 border shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-base-content">General</h2>
+      <p class="text-base-content/70 text-sm">Repository name, description, and visibility settings.</p>
+      <div class="form-control mt-4">
+        <label class="label" for="settings-owner">
+          <span class="label-text">Owner</span>
+        </label>
+        <input id="settings-owner" type="text" [value]="owner()" class="input input-bordered w-full" readonly />
+      </div>
+      <div class="form-control mt-2">
+        <label class="label" for="settings-repo-name">
+          <span class="label-text">Repository name</span>
+        </label>
+        <input
+          id="settings-repo-name"
+          type="text"
+          class="input input-bordered w-full"
+          placeholder="repo-name"
+          [ngModel]="generalName()"
+          (ngModelChange)="generalName.set($event)"
+        />
+      </div>
+      <div class="form-control mt-2">
+        <label class="label" for="settings-description">
+          <span class="label-text">Description</span>
+        </label>
+        <textarea
+          id="settings-description"
+          class="textarea textarea-bordered w-full"
+          placeholder="Brief description"
+          rows="3"
+          [ngModel]="generalDescription()"
+          (ngModelChange)="generalDescription.set($event)"
+        ></textarea>
+      </div>
+      @if (generalError()) {
+      <p class="text-error mt-2 text-sm">{{ generalError() }}</p>
+      }
+      <button type="button" class="btn btn-primary btn-sm mt-4" [disabled]="savingGeneral()" (click)="saveGeneral()">
+        @if (savingGeneral()) {
+        <span class="loading loading-spinner loading-sm"></span>
+        } @else { Save }
+      </button>
+    </div>
+  </div>
+  } @if (activeTab() === 'danger') {
+  <div class="card bg-base-100 border-error/30 border shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-error flex items-center gap-2">
+        <lucide-icon name="alertTriangle" class="size-5"></lucide-icon>
+        Danger Zone
+      </h2>
+      <p class="text-base-content/70 text-sm">
+        Once you delete a repository, there is no going back. Please be certain.
+      </p>
+      <div class="card-actions mt-4 justify-end">
+        <button type="button" class="btn btn-error btn-outline" (click)="deleteRepo()">Delete this repository</button>
+      </div>
+    </div>
+  </div>
+  }
+</div>

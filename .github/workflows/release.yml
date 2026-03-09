@@ -1,0 +1,66 @@
+name: Release | OriginHub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Maven Action
+        uses: s4u/setup-maven-action@v1.19.0
+        with:
+          java-version: 25
+          java-distribution: temurin
+          maven-version: 3.9.9
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+
+      - name: Run release:prepare
+        run: |
+          mvn -B release:prepare \
+            -Dmaven.test.skip=true \
+            -Dcheckstyle.skip=true \
+            -Dfmt.skip=true \
+            -Derrorprone.skip=true
+
+      - name: Push release commits and tags
+        run: |
+          git push origin HEAD
+          git push origin --tags
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Repsy
+        uses: docker/login-action@v3
+        with:
+          registry: repo.repsy.io
+          username: ${{ secrets.REPSY_USERNAME }}
+          password: ${{ secrets.REPSY_TOKEN }}
+
+      - name: Get release version
+        id: version
+        run: echo "version=$(git describe --tags --abbrev=0 | sed 's/^v//')" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            repo.repsy.io/nuricanozturk/originhub/originhub-os:${{ steps.version.outputs.version }}
+            repo.repsy.io/nuricanozturk/originhub/originhub-os:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

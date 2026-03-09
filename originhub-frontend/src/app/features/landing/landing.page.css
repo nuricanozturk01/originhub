@@ -1,0 +1,40 @@
+:host {
+  display: block;
+}
+
+.hero-btn-outline {
+  border-color: oklch(var(--bc) / 0.3);
+}
+.hero-btn-outline:hover {
+  border-color: oklch(var(--p));
+  background: oklch(var(--p) / 0.1);
+}
+
+.hero-gradient {
+  background: linear-gradient(
+    135deg,
+    oklch(0.72 0.15 166 / 0.08) 0%,
+    transparent 50%,
+    oklch(0.72 0.15 166 / 0.04) 100%
+  );
+}
+
+.feature-card {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px oklch(0.72 0.15 166 / 0.15);
+}
+
+.code-snippet {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  letter-spacing: 0.02em;
+}
+
+.glow {
+  box-shadow: 0 0 60px oklch(0.72 0.15 166 / 0.2);
+}

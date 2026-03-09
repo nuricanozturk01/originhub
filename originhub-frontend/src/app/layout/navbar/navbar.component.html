@@ -1,0 +1,94 @@
+<div class="navbar bg-base-100 border-base-300 bg-base-100/95 sticky top-0 z-50 border-b backdrop-blur">
+  <div class="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+    <div class="navbar-start">
+      <a
+        routerLink="/"
+        class="text-base-content flex items-center gap-2 text-xl font-bold no-underline hover:no-underline"
+      >
+        <img src="/icon.png" class="size-7" alt="icon" />
+        <span class="flex items-center">
+          <span class="text-neutral-content font-bold">Origin</span>
+          <span class="text-neutral-content font-normal">Hub</span>
+        </span>
+      </a>
+      @if (isLoggedIn()) {
+        <ul class="menu menu-horizontal hidden gap-1 px-1 md:flex">
+          <li>
+            <a
+              routerLink="/dashboard"
+              routerLinkActive="text-primary font-medium"
+              class="text-base-content/70 hover:text-base-content hover:bg-base-200 rounded-lg font-medium no-underline"
+              >Dashboard</a
+            >
+          </li>
+          <li>
+            <a
+              routerLink="/docs"
+              routerLinkActive="text-primary font-medium"
+              class="text-base-content/70 hover:text-base-content hover:bg-base-200 rounded-lg font-medium no-underline"
+              >Docs</a
+            >
+          </li>
+        </ul>
+      }
+    </div>
+
+    <div class="navbar-end gap-2">
+      @if (isLoggedIn()) {
+        <div class="dropdown dropdown-end hidden lg:block">
+          <div
+            tabindex="0"
+            role="button"
+            class="hover:bg-base-200 flex cursor-pointer items-center gap-2 rounded-lg p-1"
+          >
+            <app-avatar
+              [avatarUrl]="avatarUrl()"
+              [email]="userEmail()"
+              [username]="user()?.username ?? null"
+              [fallback]="user() ? user()!.username.charAt(0).toUpperCase() : '?'"
+              size="md"
+            />
+            <span class="text-base-content/70 max-w-32 truncate text-sm sm:max-w-none">{{
+              user()?.displayName ?? user()?.username ?? 'User'
+            }}</span>
+          </div>
+          <ul
+            tabindex="0"
+            class="menu menu-sm dropdown-content bg-base-100 rounded-box border-base-300 z-[100] mt-3 w-56 border p-2 shadow-lg"
+          >
+            <li>
+              <a [routerLink]="user() ? ['/', user()!.username] : ['/']" class="font-medium no-underline">{{
+                user()?.displayName ?? 'Profile'
+              }}</a>
+            </li>
+            <li><a routerLink="/settings" class="no-underline">Settings</a></li>
+            <li><a routerLink="/dashboard" class="no-underline">Dashboard</a></li>
+            <li><a routerLink="/docs" class="no-underline">Docs</a></li>
+            <li><hr class="my-1" /></li>
+            <li><button type="button" (click)="logout()">Sign out</button></li>
+          </ul>
+        </div>
+        <div class="dropdown dropdown-end lg:hidden">
+          <button type="button" tabindex="0" class="btn btn-ghost btn-square" aria-label="Toggle menu">
+            <lucide-icon name="menu" class="size-6"></lucide-icon>
+          </button>
+          <ul
+            tabindex="0"
+            class="menu menu-sm dropdown-content bg-base-100 rounded-box border-base-300 z-[100] mt-3 w-52 border p-2 shadow-lg"
+          >
+            <li><a routerLink="/dashboard" class="no-underline">Dashboard</a></li>
+            <li><a routerLink="/new" class="no-underline">New</a></li>
+            <li><a routerLink="/docs" class="no-underline">Docs</a></li>
+            <li><a routerLink="/settings" class="no-underline">Settings</a></li>
+            <li><hr class="my-1" /></li>
+            <li><button type="button" (click)="logout()">Sign out</button></li>
+          </ul>
+        </div>
+      } @else {
+        <a routerLink="/docs" class="btn btn-ghost btn-sm hidden sm:inline-flex">Docs</a>
+        <a routerLink="/login" class="btn btn-ghost btn-sm">Login</a>
+        <a routerLink="/register" class="btn btn-primary btn-sm">Register</a>
+      }
+    </div>
+  </div>
+</div>

@@ -1,0 +1,53 @@
+<div class="bg-base-200 min-h-screen">
+  <div class="mx-auto max-w-5xl px-4 py-8 sm:px-6 md:py-12 lg:px-8">
+    @if (user(); as u) {
+    <div class="flex flex-col gap-8 md:flex-row">
+      <div class="shrink-0 md:w-64">
+        <div class="mb-4">
+          <app-avatar
+            [avatarUrl]="u.avatarUrl"
+            [email]="u.email"
+            [username]="u.username"
+            [fallback]="u.username.charAt(0).toUpperCase()"
+            size="2xl"
+          />
+        </div>
+        <h1 class="text-base-content text-2xl font-bold">{{ u.displayName }}</h1>
+        <p class="text-base-content/60">@{{ u.username }}</p>
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <h2 class="text-base-content mb-4 text-lg font-semibold">Repositories</h2>
+
+        <div class="space-y-3">
+          @for (repo of repos(); track repo.id) {
+          <a
+            [routerLink]="['/', repo.owner.username, repo.name]"
+            class="card bg-base-100 border-base-300 hover:border-primary/50 border shadow-sm transition-colors"
+          >
+            <div class="card-body flex-row items-center gap-4 py-4">
+              <div class="bg-primary/20 text-primary flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
+                <lucide-icon name="bookOpen" class="size-5"></lucide-icon>
+              </div>
+              <div class="min-w-0 flex-1">
+                <h3 class="text-base-content truncate font-semibold">{{ repo.name }}</h3>
+                @if (repo.description) {
+                <p class="text-base-content/70 line-clamp-1 text-sm">{{ repo.description }}</p>
+                }
+                <div class="text-base-content/60 mt-1 flex gap-4 text-xs">
+                  <span>{{ repo.updatedAt | relativeTime }}</span>
+                </div>
+              </div>
+            </div>
+          </a>
+          }
+        </div>
+      </div>
+    </div>
+    } @else {
+    <div class="py-16 text-center">
+      <p class="text-base-content/70">User not found.</p>
+    </div>
+    }
+  </div>
+</div>

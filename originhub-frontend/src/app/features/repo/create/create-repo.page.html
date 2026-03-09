@@ -1,0 +1,123 @@
+<div class="bg-base-200 flex min-h-screen items-center justify-center p-4">
+  <div class="mx-auto w-full max-w-lg">
+    <div class="card bg-base-100 border-base-300 border shadow-lg">
+      <div class="m-3 text-center">
+        <a
+          routerLink="/"
+          class="text-base-content mb-5 flex items-center justify-center gap-2 text-xl font-bold no-underline hover:no-underline"
+        >
+          <img src="/icon.png" class="size-12 shrink-0 object-contain" alt="icon" />
+          <span class="flex items-center">
+            <span class="text-neutral-content text-3xl font-bold">Origin</span>
+            <span class="text-neutral-content text-3xl font-normal">Hub</span>
+          </span>
+        </a>
+        <h1 class="text-base-content text-xl font-semibold">Create a new repository</h1>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
+          @if (error()) {
+          <div class="alert alert-error">
+            <span>{{ error() }}</span>
+          </div>
+          }
+          <div class="form-control">
+            <label class="label" for="name">
+              <span class="label-text">Repository name</span>
+            </label>
+            <input
+              id="name"
+              type="text"
+              formControlName="name"
+              placeholder="my-awesome-repo"
+              class="input input-bordered w-full"
+            />
+            @if (form.get('name')?.invalid && form.get('name')?.touched) {
+            <span class="label">
+              <span class="label-text-alt text-error">Letters, numbers, . _ - only</span>
+            </span>
+            }
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="description">
+              <span class="label-text">Description (optional)</span>
+            </label>
+            <textarea
+              id="description"
+              formControlName="description"
+              placeholder="Short description"
+              class="textarea textarea-bordered w-full"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="defaultBranch">
+              <span class="label-text">Default branch</span>
+            </label>
+            <input
+              id="defaultBranch"
+              type="text"
+              formControlName="defaultBranch"
+              list="defaultBranchList"
+              placeholder="master"
+              class="input input-bordered w-full"
+            />
+            <datalist id="defaultBranchList">
+              @for (branch of defaultBranchOptions; track branch) {
+              <option [value]="branch"></option>
+              }
+            </datalist>
+            <label class="label" for="defaultBranch">
+              <span class="label-text-alt text-base-content/60"
+                >Initial branch name (letters, numbers, hyphens, underscores, slashes)</span
+              >
+            </label>
+          </div>
+
+          <div class="form-control">
+            <label class="label" for="topics">
+              <span class="label-text">Topics (optional)</span>
+            </label>
+            <div class="input input-bordered flex min-h-12 flex-wrap gap-2 rounded-lg p-2">
+              @for (topic of form.get('topics')?.value ?? []; track topic) {
+              <span class="badge-pill badge-pill--topic gap-1">
+                {{ topic }}
+                <button
+                  type="button"
+                  class="btn btn-ghost btn-xs btn-circle"
+                  (click)="removeTopic(topic)"
+                  aria-label="Remove topic"
+                >
+                  ×
+                </button>
+              </span>
+              } @if ((form.get('topics')?.value ?? []).length < 10) {
+              <input
+                id="topics"
+                type="text"
+                class="min-w-24 grow bg-transparent outline-none"
+                placeholder="Add topic..."
+                [value]="topicInput()"
+                (input)="topicInput.set($any($event.target).value)"
+                (keydown)="onTopicKeydown($event)"
+                (blur)="addTopic()"
+              />
+              }
+            </div>
+            <label class="label" for="topics">
+              <span class="label-text-alt text-base-content/60">Max 10 topics. Letters, numbers, hyphens only.</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-full" [disabled]="form.invalid || loading()">
+            @if (loading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            } @else { Create repository }
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

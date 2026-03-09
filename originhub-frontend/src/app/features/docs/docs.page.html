@@ -1,0 +1,189 @@
+<div class="docs bg-base-200 min-h-screen">
+  <div class="mx-auto max-w-4xl px-4 py-12 sm:px-6 md:py-16 lg:px-8">
+    <a
+      routerLink="/"
+      class="text-base-content/70 hover:text-primary mb-8 inline-flex items-center gap-2 text-sm font-medium no-underline"
+    >
+      <lucide-icon name="arrowLeft" class="size-4"></lucide-icon>
+      Back to home
+    </a>
+
+    <header class="mb-12">
+      <div class="mb-4 flex items-center gap-3">
+        <div class="bg-primary/20 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+          <lucide-icon name="bookOpen" class="text-primary size-6"></lucide-icon>
+        </div>
+        <h1 class="text-base-content text-3xl font-bold sm:text-4xl">Documentation</h1>
+      </div>
+      <p class="text-base-content/70 text-lg">
+        Get started with OriginHub. Configure your local environment and start pushing code.
+      </p>
+    </header>
+
+    <nav class="border-base-300 mb-12 border-b pb-8">
+      <h2 class="text-base-content/60 mb-4 text-sm font-semibold tracking-wider uppercase">On this page</h2>
+      <ul class="space-y-2">
+        <li>
+          <a
+            href="#local-setup"
+            class="text-primary cursor-pointer hover:underline"
+            (click)="scrollToSection('local-setup'); $event.preventDefault()"
+          >
+            Local environment setup
+          </a>
+        </li>
+        <li>
+          <a
+            href="#ssh-config"
+            class="text-primary cursor-pointer hover:underline"
+            (click)="scrollToSection('ssh-config'); $event.preventDefault()"
+          >
+            SSH config (optional)
+          </a>
+        </li>
+        <li>
+          <a
+            href="#clone-push"
+            class="text-primary cursor-pointer hover:underline"
+            (click)="scrollToSection('clone-push'); $event.preventDefault()"
+          >
+            Clone & push
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <article class="prose-docs space-y-12">
+      <section id="local-setup">
+        <h2 class="text-base-content mb-4 flex items-center gap-2 text-2xl font-bold">
+          <span class="bg-primary/20 text-primary flex h-8 w-8 items-center justify-center rounded-lg font-mono text-sm"
+            >1</span
+          >
+          Local environment setup
+        </h2>
+        <p class="text-base-content/70 mb-6">
+          To use OriginHub over SSH, you need to generate an SSH key and add it to your account. Follow these steps for
+          local development (default SSH port: 2222).
+        </p>
+
+        <div class="space-y-6">
+          <div class="step-block">
+            <h3 class="text-base-content mb-2 text-lg font-semibold">Step 1 — Generate SSH key</h3>
+            <p class="text-base-content/70 mb-3 text-sm">
+              Create an ED25519 key pair. Skip this if you already have one.
+            </p>
+            <div class="code-block">
+              <pre
+                class="m-0 overflow-x-auto p-4"
+              ><code>ssh-keygen -t ed25519 -C "your-email&#64;example.com"</code></pre>
+            </div>
+          </div>
+
+          <div class="step-block">
+            <h3 class="text-base-content mb-2 text-lg font-semibold">Step 2 — Copy your public key</h3>
+            <p class="text-base-content/70 mb-3 text-sm">Display your public key and copy it to the clipboard.</p>
+            <div class="code-block">
+              <pre class="m-0 overflow-x-auto p-4"><code>cat ~/.ssh/id_ed25519.pub</code></pre>
+            </div>
+          </div>
+
+          <div class="step-block">
+            <h3 class="text-base-content mb-2 text-lg font-semibold">Step 3 — Add key to OriginHub</h3>
+            <p class="text-base-content/70 mb-3 text-sm">
+              Paste the key in <strong>Settings → SSH Keys</strong>, or add via API:
+            </p>
+          </div>
+
+          <div class="step-block">
+            <h3 class="text-base-content mb-2 text-lg font-semibold">Step 4 — Clone without SSH Config</h3>
+
+            <div class="code-block">
+              <pre
+                class="m-0 overflow-x-auto p-4 text-sm"
+              ><code>git clone ssh://git&#64;localhost:2222/owner/repo.git</code></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ssh-config">
+        <h2 class="text-base-content mb-4 flex items-center gap-2 text-2xl font-bold">
+          <span class="bg-primary/20 text-primary flex h-8 w-8 items-center justify-center rounded-lg font-mono text-sm"
+            >3</span
+          >
+          SSH config (optional)
+        </h2>
+        <p class="text-base-content/70 mb-6">
+          Alternative: you can add an entry to
+          <code class="bg-base-300 rounded px-1.5 py-0.5 font-mono text-sm">~/.ssh/config</code>
+          for a shorter alias.
+        </p>
+
+        <div class="code-block mb-4">
+          <pre class="m-0 overflow-x-auto p-4 text-sm"><code>Host originhub-local
+    HostName localhost
+    Port 2222
+    User git
+    IdentityFile ~/.ssh/id_ed25519</code></pre>
+        </div>
+
+        <p class="text-base-content/70 mb-4">Then clone and push using the short host alias:</p>
+
+        <div class="code-block">
+          <pre class="m-0 overflow-x-auto p-4"><code>git clone originhub-local:username/repo-name.git
+cd repo-name
+git push origin main</code></pre>
+        </div>
+      </section>
+
+      <section id="clone-push">
+        <h2 class="text-base-content mb-4 flex items-center gap-2 text-2xl font-bold">
+          <span class="bg-primary/20 text-primary flex h-8 w-8 items-center justify-center rounded-lg font-mono text-sm"
+            >2</span
+          >
+          Clone &amp; push quick reference
+        </h2>
+        <div class="bg-base-100 border-base-300 overflow-hidden rounded-xl border">
+          <table class="table">
+            <thead>
+              <tr>
+                <th class="text-base-content/70 font-medium">Action</th>
+                <th class="text-base-content/70 font-medium">Command</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Clone (full URL)</td>
+                <td><code class="font-mono text-sm">git clone ssh://git&#64;localhost:2222/owner/repo.git</code></td>
+              </tr>
+              <tr>
+                <td>Clone (with config)</td>
+                <td><code class="font-mono text-sm">git clone originhub-local:owner/repo.git</code></td>
+              </tr>
+              <tr>
+                <td>Push to branch</td>
+                <td><code class="font-mono text-sm">git push origin main</code></td>
+              </tr>
+              <tr>
+                <td>Push new branch</td>
+                <td><code class="font-mono text-sm">git push -u origin feature-branch</code></td>
+              </tr>
+              <tr>
+                <td>Pull latest</td>
+                <td><code class="font-mono text-sm">git pull origin main</code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </article>
+
+    <footer class="border-base-300 mt-16 border-t pt-8">
+      <p class="text-base-content/60 text-sm">Need help? Create an issue or reach out to the team.</p>
+      <a routerLink="/" class="btn btn-ghost btn-sm mt-4 gap-2">
+        <lucide-icon name="home" class="size-4"></lucide-icon>
+        Back to home
+      </a>
+    </footer>
+  </div>
+</div>

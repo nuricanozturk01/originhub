@@ -1,0 +1,50 @@
+:host {
+  display: block;
+}
+
+.docs :host {
+  display: block;
+}
+
+.docs section[id] {
+  scroll-margin-top: 5rem;
+}
+
+.step-block {
+  background: oklch(var(--b1));
+  border: 1px solid oklch(var(--b3));
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+}
+
+.code-block {
+  background: oklch(var(--b3) / 0.5);
+  border: 1px solid oklch(var(--b3));
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.code-block pre {
+  font-family: 'DM Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: oklch(var(--bc) / 0.9);
+}
+
+.code-block code {
+  font-family: inherit;
+}
+
+.prose-docs a {
+  color: oklch(var(--p));
+  text-decoration: none;
+}
+
+.prose-docs a:hover {
+  text-decoration: underline;
+}
+
+.prose-docs code {
+  font-family: 'DM Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 0.875em;
+}
