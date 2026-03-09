@@ -57,3 +57,6 @@ package-lock.json
 application-local.yml
 
 # Vercel
+
+# Compiled class files
+*.class
