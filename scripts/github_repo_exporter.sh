@@ -1,10 +1,10 @@
 #!/bin/bash
 
 GITHUB_USER="nuricanozturk01"
-ORIGINHUB_USER="nuricanozturk01"
+ORIGINHUB_USER="nuricanozturk"
 ORIGINHUB_API="http://localhost:8080"
 ORIGINHUB_SSH="ssh://git@localhost:2222"
-ORIGINHUB_TOKEN="eyJ0eXAiOiJCZWFyZXIiLCJhbGciOiJIUzUxMiJ9.eyJqdGkiOiI4NGFhN2JiOS0xZmUzLTRjN2UtOTkxNy0xM2Q1ZmVlN2MzOWUiLCJzdWIiOiIxZmE1NWI4Zi0wY2MzLTQxMzQtYWZkMy0zNWM2MmQyNmEwNjIiLCJpc3MiOiJvcmlnaW5odWItYXBwbGljYXRpb24iLCJpYXQiOjE3NzI5OTg1NjEsImV4cCI6MTc3MzA4NDk2MSwiZW1haWwiOiJudXJpY2Fub3p0dXJrMDEtODU2MUBvcmlnaW5odWItb3MuY29tIn0.eseRJHUFLsOXZ7m1rx7ohkUYLFpjPjs0VD-9vtk0K3h8q8tgnSWXHU9QuFKQj7ox3nKqTSfXSiicxUcq3JqibQ"
+ORIGINHUB_TOKEN="ACCESS_TOKEN"
 
 export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 

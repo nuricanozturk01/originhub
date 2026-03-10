@@ -10,7 +10,7 @@ originhub:
     host-path: ${originhub.git.repo-root}/.hosts
     host-key-path: ${originhub.ssh.host-path}/ssh_host_key
   jwt:
-    secret: ${ORIGINHUB_JWT_SECRET}
+    secret: ${ORIGINHUB_JWT_SECRET:995a44f7111b23ebed8ad37e8b9cbe380dd5022f8b3bf67b16c8e223456f74a0}
   frontend:
     base-url: ${ORIGINHUB_FRONTEND_BASE_URL:http://localhost:4200}
   git:
