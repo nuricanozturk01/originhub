@@ -27,10 +27,10 @@ import java.nio.file.Path;
 import java.security.PublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.i2p.crypto.eddsa.EdDSAPublicKey;
+import org.apache.sshd.common.AttributeRepository;
 import org.apache.sshd.git.GitLocationResolver;
 import org.apache.sshd.git.pack.GitPackCommandFactory;
 import org.apache.sshd.server.SshServer;
@@ -50,7 +50,8 @@ public class OriginHubSshServer {
   private static final int EC_FIELD_SIZE_NIST_P256 = 256;
   private static final int EC_FIELD_SIZE_NIST_P384 = 384;
   private static final int EC_FIELD_SIZE_NIST_P521 = 521;
-  private final ConcurrentHashMap<String, Tenant> authenticatedSessions = new ConcurrentHashMap<>();
+  private static final AttributeRepository.AttributeKey<Tenant> TENANT_KEY =
+      new AttributeRepository.AttributeKey<>();
 
   private final @NonNull SshKeyService sshKeyService;
   private final @NonNull RepoRepository repoRepository;
@@ -102,10 +103,8 @@ public class OriginHubSshServer {
         final var fingerprint = SshKeyService.fingerprintFromWireBytes(wireBytes);
         final var tenant = this.sshKeyService.findTenantByFingerprint(fingerprint);
 
-        final var sessionId = String.valueOf(session.getIoSession().getId());
-        this.authenticatedSessions.put(sessionId, tenant);
+        session.setAttribute(TENANT_KEY, tenant);
 
-        session.addCloseFutureListener(_ -> this.authenticatedSessions.remove(sessionId));
         log.info("SSH auth success: username={}, tenant={}", username, tenant.getUsername());
         return true;
       } catch (final Exception ex) {
@@ -215,8 +214,7 @@ public class OriginHubSshServer {
 
   private @NonNull Tenant resolveTenant(final @NonNull ServerSession session) throws IOException {
 
-    final var sessionId = String.valueOf(session.getIoSession().getId());
-    final var tenant = this.authenticatedSessions.get(sessionId);
+    final var tenant = session.getAttribute(TENANT_KEY);
 
     if (tenant == null) {
       throw new IOException("Not authenticated");
