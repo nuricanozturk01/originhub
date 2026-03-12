@@ -177,44 +177,10 @@ server"*, OriginHub is for you.
 
 > 📖 Full documentation: **[originhub.nuricanozturk.com/docs](https://originhub.nuricanozturk.com/docs)** [Only Documentation. Not deployed to cloud]
 
-### Option 1 — One-liner *(easiest)*
-
-No clone needed. Just run:
-
-```bash
-curl -o docker-compose.yml https://raw.githubusercontent.com/nuricanozturk01/originhub/refs/heads/main/docker-compose.yml
-docker compose up -d
-```
-
-Open [http://localhost:8080](http://localhost:8080) in your browser. Done.
-
-> **Only `ORIGINHUB_JWT_SECRET` is required.** Create a `.env` file next to your `docker-compose.yml`:
->
-> ```env
-> ORIGINHUB_JWT_SECRET=your_random_256bit_secret_here
-> ```
-
----
-
-### Option 2 — Docker Compose with full config
-
-```bash
-git clone https://github.com/nuricanozturk/originhub.git
-cd originhub
-
-cp .env.example .env
-# Edit .env — set JWT secret, OAuth2 keys, etc.
-
-docker compose up -d
-```
-
----
-
-### Option 3 — Docker Run
+### Option 1 — Docker Run (Manual)
 
 ```bash
 docker network create originhub
-
 docker run -d \
   --name originhub-postgres \
   --network originhub \
@@ -222,7 +188,6 @@ docker run -d \
   -e POSTGRES_USER=admin \
   -e POSTGRES_PASSWORD=admin123 \
   postgres:17
-
 docker run -d \
   --name originhub \
   --network originhub \
@@ -231,7 +196,7 @@ docker run -d \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://originhub-postgres:5432/originhub \
   -e SPRING_DATASOURCE_USERNAME=admin \
   -e SPRING_DATASOURCE_PASSWORD=admin123 \
-  -e ORIGINHUB_JWT_SECRET=995a44f7111b23ebed8ad37e8b9cbe380dd5022f8b3bf67b16c8e223456f74a0 \
+  -e ORIGINHUB_JWT_SECRET=your_secret_here \
   -e ORIGINHUB_GIT_REPO__ROOT=/data/repos \
   -e SPRING_PROFILES_ACTIVE=os \
   -v originhub-repos:/data/repos \
@@ -239,6 +204,28 @@ docker run -d \
 ```
 
 ---
+
+### Option 2 — Makefile
+
+```bash
+git clone https://github.com/nuricanozturk/originhub.git
+cd originhub
+make up
+```
+
+Edit the variables at the top of the `Makefile` before running — at minimum set `JWT_SECRET`. OAuth2 keys are optional.
+
+| Target | Description |
+|---|---|
+| `make up` | Create network, start DB and app |
+| `make down` | Stop and remove containers |
+| `make start` / `make stop` | Start or stop existing containers |
+| `make restart` | Stop then start |
+| `make logs` | Follow app logs |
+| `make logs-db` | Follow database logs |
+| `make ps` | List running containers |
+| `make clean` | Remove containers and network (volumes kept) |
+| `make purge` | Remove everything including repo data ⚠️ |
 
 ### Environment Variables
 
