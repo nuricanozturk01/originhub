@@ -206,17 +206,16 @@ export class BlobPage implements OnDestroy {
 
   copyContent(): void {
     navigator.clipboard.writeText(this.decodedContent());
-    this.copied.set(true);
-    if (this.copiedTimer !== null) clearTimeout(this.copiedTimer);
-    this.copiedTimer = setTimeout(() => {
-      this.copied.set(false);
-      this.copiedTimer = null;
-    }, 2000);
+    this.scheduleCopied();
   }
 
   copyRawUrl(): void {
     const url = `${environment.apiUrl}/api/repos/${this.owner()}/${this.repoName()}/raw/${this.branch()}/${this.path()}`;
     navigator.clipboard.writeText(url);
+    this.scheduleCopied();
+  }
+
+  private scheduleCopied(): void {
     this.copied.set(true);
     if (this.copiedTimer !== null) clearTimeout(this.copiedTimer);
     this.copiedTimer = setTimeout(() => {

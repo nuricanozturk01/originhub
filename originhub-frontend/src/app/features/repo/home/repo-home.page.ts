@@ -177,8 +177,12 @@ export class RepoHomePage implements OnDestroy {
 
   copyText(value: string, type: 'https' | 'ssh'): void {
     navigator.clipboard.writeText(value);
-    this.copied.set(type);
     this.toast.success('Copied to clipboard');
+    this.scheduleCopied(type);
+  }
+
+  private scheduleCopied(type: 'https' | 'ssh'): void {
+    this.copied.set(type);
     if (this.copiedTimer !== null) clearTimeout(this.copiedTimer);
     this.copiedTimer = setTimeout(() => {
       this.copied.set(null);
