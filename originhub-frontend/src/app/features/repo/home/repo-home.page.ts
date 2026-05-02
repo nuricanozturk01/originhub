@@ -16,7 +16,7 @@
 
 import { Component, inject, signal, computed, SecurityContext, OnDestroy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { finalize, firstValueFrom } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
@@ -42,7 +42,6 @@ import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signa
 })
 export class RepoHomePage implements OnDestroy {
   private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
   private readonly http = inject(HttpClient);
   private readonly branchService = inject(BranchService);
   private readonly repoContext = inject(RepoContextService);
@@ -81,9 +80,7 @@ export class RepoHomePage implements OnDestroy {
     return `${base}/git/${o}/${r}`;
   });
 
-  readonly sshCloneUrl = computed(
-    () => `ssh://${environment.gitUrl}/${this.owner()}/${this.repoName()}.git`,
-  );
+  readonly sshCloneUrl = computed(() => `ssh://${environment.gitUrl}/${this.owner()}/${this.repoName()}.git`);
 
   constructor() {
     const parent = this.route.parent;
@@ -252,10 +249,10 @@ export class RepoHomePage implements OnDestroy {
         error: () => this.toast.error('Could not download ZIP'),
       });
   }
-
   private fallbackZipFileName(owner: string, repo: string, branch: string): string {
     const safe = (s: string) =>
       s
+        // eslint-disable-next-line no-control-regex
         .replace(/[\u0000-\u001f/\\:*?"<>|]/g, '-')
         .replace(/--+/g, '-')
         .trim() || 'archive';

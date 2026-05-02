@@ -61,11 +61,7 @@ export class TreePage {
 
   constructor() {
     const gp = this.route.parent?.parent;
-    merge(
-      gp?.paramMap ?? this.route.paramMap,
-      this.route.paramMap,
-      this.route.url,
-    )
+    merge(gp?.paramMap ?? this.route.paramMap, this.route.paramMap, this.route.url)
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.parseUrlAndLoad());
   }

@@ -19,22 +19,22 @@ HTTP_PORT     := 8080
 SSH_PORT      := 2222
 
 # Google Client
-GOOGLE_CLIENT_ID := YOUR_CLIENT
+GOOGLE_CLIENT_ID     := YOUR_CLIENT
 GOOGLE_CLIENT_SECRET := YOUR_SECRET
 
 # Github Client
-GITHUB_CLIENT_ID := YOUR_CLIENT
+GITHUB_CLIENT_ID     := YOUR_CLIENT
 GITHUB_CLIENT_SECRET := YOUR_SECRET
 
 # Gitlab Client
-GITLAB_CLIENT_ID := YOUR_CLIENT
+GITLAB_CLIENT_ID     := YOUR_CLIENT
 GITLAB_CLIENT_SECRET := YOUR_SECRET
 
 # ──────────────────────────────────────────────
 .PHONY: all up down start stop restart logs logs-db ps \
-        network network-rm \
-        db app \
-        clean purge help
+  network network-rm \
+  db app \
+  clean purge help
 
 all: up
 

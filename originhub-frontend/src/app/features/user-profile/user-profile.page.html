@@ -92,11 +92,8 @@
           <div>
             <h2 id="profile-repos-heading" class="text-base-content text-lg font-semibold">Repositories</h2>
             <p class="text-base-content/60 mt-0.5 text-sm">
-              @if (hasActiveFilters()) {
-              {{ filteredRepos().length }} of {{ repoStats().total }} shown
-              } @else {
-              {{ repoStats().total }} total
-              }
+              @if (hasActiveFilters()) { {{ filteredRepos().length }} of {{ repoStats().total }} shown } @else { {{
+              repoStats().total }} total }
             </p>
           </div>
           <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
@@ -149,7 +146,7 @@
         <div class="repo-panel profile-topic-bar px-4 py-3">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
             <span
-              class="text-base-content/70 flex shrink-0 items-center gap-1.5 text-xs font-medium uppercase tracking-wide"
+              class="text-base-content/70 flex shrink-0 items-center gap-1.5 text-xs font-medium tracking-wide uppercase"
             >
               <lucide-icon name="tag" class="size-3.5"></lucide-icon>
               Topics
@@ -165,8 +162,7 @@
               >
                 {{ topic }}
               </button>
-              }
-              @if (selectedTopics().length > 0) {
+              } @if (selectedTopics().length > 0) {
               <button type="button" class="btn btn-ghost btn-xs gap-1 normal-case" (click)="clearTopicFilters()">
                 Clear topics
               </button>
@@ -174,9 +170,7 @@
             </div>
           </div>
         </div>
-        }
-
-        @if (repos().length === 0) {
+        } @if (repos().length === 0) {
         <div class="repo-panel">
           <div class="flex flex-col items-center px-6 py-14 text-center">
             <lucide-icon name="bookOpen" class="text-base-content/35 mb-4 size-14"></lucide-icon>
@@ -198,8 +192,10 @@
           <div class="flex flex-col items-center px-6 py-12 text-center">
             <lucide-icon name="filter" class="text-base-content/35 mb-3 size-10"></lucide-icon>
             <p class="text-base-content font-medium">No repositories match your filters</p>
-            <p class="text-base-content/60 mt-1 max-w-sm text-sm">Adjust search or topic filters to see more results.</p>
-            <button type="button" class="btn btn-outline btn-sm mt-4 border-base-300" (click)="clearFilters()">
+            <p class="text-base-content/60 mt-1 max-w-sm text-sm">
+              Adjust search or topic filters to see more results.
+            </p>
+            <button type="button" class="btn btn-outline btn-sm border-base-300 mt-4" (click)="clearFilters()">
               Clear all filters
             </button>
           </div>

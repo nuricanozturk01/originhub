@@ -18,7 +18,7 @@
 
     <div
       role="tablist"
-      class="settings-tabs tabs mb-8 flex w-full flex-wrap gap-1 border-b border-base-300 bg-transparent pb-0.5"
+      class="settings-tabs tabs border-base-300 mb-8 flex w-full flex-wrap gap-1 border-b bg-transparent pb-0.5"
       aria-label="Settings sections"
     >
       <button
@@ -71,7 +71,7 @@
     >
       <section class="repo-panel settings-section relative overflow-hidden">
         <div
-          class="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40"
+          class="from-primary/40 via-primary to-primary/40 pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r"
         ></div>
         <div class="p-5 sm:p-6">
           <h2 class="text-base-content flex items-center gap-2 text-lg font-semibold">
@@ -149,7 +149,7 @@
       </section>
 
       <section class="repo-panel border-error/35 settings-section-danger relative overflow-hidden p-5 sm:p-6">
-        <div class="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-error/60"></div>
+        <div class="bg-error/60 pointer-events-none absolute inset-x-0 top-0 h-0.5"></div>
         <h2 class="text-error flex items-center gap-2 text-lg font-semibold">
           <lucide-icon name="alertTriangle" class="size-5 shrink-0"></lucide-icon>
           Danger zone
@@ -165,15 +165,10 @@
       </section>
     </div>
     } @if (activeTab() === 'security') {
-    <div
-      id="settings-panel-security"
-      role="tabpanel"
-      aria-labelledby="settings-tab-security"
-      class="settings-panels"
-    >
+    <div id="settings-panel-security" role="tabpanel" aria-labelledby="settings-tab-security" class="settings-panels">
       <section class="repo-panel settings-section relative overflow-hidden">
         <div
-          class="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40"
+          class="from-primary/40 via-primary to-primary/40 pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r"
         ></div>
         <div class="p-5 sm:p-6">
           <h2 class="text-base-content flex items-center gap-2 text-lg font-semibold">
@@ -228,7 +223,9 @@
     } @if (activeTab() === 'ssh') {
     <div id="settings-panel-ssh" role="tabpanel" aria-labelledby="settings-tab-ssh" class="settings-panels">
       <section class="repo-panel settings-section overflow-hidden">
-        <div class="border-base-300 flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+        <div
+          class="border-base-300 flex flex-col gap-4 border-b p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6"
+        >
           <div>
             <h2 class="text-base-content flex items-center gap-2 text-lg font-semibold">
               <lucide-icon name="keyRound" class="text-primary size-5 shrink-0"></lucide-icon>
@@ -273,7 +270,7 @@
               </div>
               <button
                 type="button"
-                class="btn btn-ghost min-h-10 px-4 text-error hover:bg-error/10 shrink-0"
+                class="btn btn-ghost text-error hover:bg-error/10 min-h-10 shrink-0 px-4"
                 (click)="deleteSshKey(k.id)"
               >
                 Remove
@@ -293,7 +290,9 @@
 <div class="modal modal-open" role="dialog" aria-modal="true" aria-labelledby="ssh-modal-title">
   <div class="modal-box max-w-lg">
     <h3 id="ssh-modal-title" class="text-base-content text-lg font-bold">Add SSH key</h3>
-    <p class="text-base-content/60 mt-1 text-sm">Paste your <span class="font-mono text-xs">ssh-ed25519</span> or RSA public key.</p>
+    <p class="text-base-content/60 mt-1 text-sm">
+      Paste your <span class="font-mono text-xs">ssh-ed25519</span> or RSA public key.
+    </p>
     <div class="settings-field mt-5">
       <label for="ssh-title" class="settings-label">Title</label>
       <input

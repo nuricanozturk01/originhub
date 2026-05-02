@@ -82,7 +82,7 @@ export class UserProfilePage {
     const q = this.repoQuery().trim().toLowerCase();
     const topics = this.selectedTopics();
     const sort = this.sortBy();
-    let list = this.repos().filter((r) => matchesRepoSearch(r, q) && matchesTopicFilter(r, topics));
+    const list = this.repos().filter((r) => matchesRepoSearch(r, q) && matchesTopicFilter(r, topics));
     return [...list].sort((a, b) => compareReposBySort(a, b, sort));
   });
 

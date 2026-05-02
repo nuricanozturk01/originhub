@@ -61,9 +61,7 @@ export class DashboardPage {
     const topics = this.selectedTopics();
     const sort = this.sortBy();
     const qLower = q.toLowerCase();
-    let items = this.repos().filter(
-      ({ repo }) => matchesRepoSearch(repo, qLower) && matchesTopicFilter(repo, topics),
-    );
+    let items = this.repos().filter(({ repo }) => matchesRepoSearch(repo, qLower) && matchesTopicFilter(repo, topics));
     items = [...items].sort((a, b) => compareReposBySort(a.repo, b.repo, sort));
     return items;
   });
