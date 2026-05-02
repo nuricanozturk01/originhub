@@ -14,4 +14,4 @@
  * limitations under the License.
  */
 @org.jspecify.annotations.NullMarked
-package com.nuricanozturk.originhub.http.services;
+package com.nuricanozturk.originhub.shared.git.http;
