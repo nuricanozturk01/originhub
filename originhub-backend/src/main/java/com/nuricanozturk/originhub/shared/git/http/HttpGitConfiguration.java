@@ -27,7 +27,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Base64;
-import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -54,8 +53,8 @@ public class HttpGitConfiguration {
 
     final var gitServlet = new GitServlet();
     gitServlet.setRepositoryResolver((req, name) -> {
-      validateRepoPath(name);
-      final var parts = name.replace(".git", "").split("/");
+      final var cleanName = name.replace(".git", "");
+      final var parts = cleanName.split("/");
 
       if (parts.length < 2) {
         throw new org.eclipse.jgit.errors.RepositoryNotFoundException(name);
@@ -97,12 +96,6 @@ public class HttpGitConfiguration {
     return registration;
   }
 
-  private void validateRepoPath(final @NonNull String path) {
-    final var pattern = Pattern.compile("^[a-zA-Z0-9._-]+(/[a-zA-Z0-9._-]+)?\\.git$");
-    if (!pattern.matcher(path).matches()) {
-      throw new IllegalArgumentException("Invalid repository path: " + path);
-    }
-  }
 
   @Slf4j
   @RequiredArgsConstructor
