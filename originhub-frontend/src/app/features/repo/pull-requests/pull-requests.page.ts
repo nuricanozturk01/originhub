@@ -19,6 +19,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
+import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { PullRequestService } from '../../../core/pull-request/services/pull-request.service';
 import { RepoContextService } from '../../../core/repo/services/repo-context.service';
 import type { PullRequestInfo } from '../../../domain/pull-request/models/pull-request-info.model';
@@ -39,8 +40,9 @@ export class PullRequestsPage implements OnInit {
   readonly loading = signal(true);
   readonly tab = signal<'open' | 'closed' | 'merged'>('open');
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRouteParams = parentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRouteParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRouteParams().get('repo') ?? '');
 
   readonly openCount = computed(() => this.pulls().filter((p) => p.status === 'OPEN').length);
   readonly closedCount = computed(() => this.pulls().filter((p) => p.status === 'CLOSED').length);
@@ -52,8 +54,7 @@ export class PullRequestsPage implements OnInit {
   });
 
   ngOnInit(): void {
-    this.route.parent?.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.loadAll());
-    this.loadAll();
+    this.route.parent!.paramMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => void this.loadAll());
   }
 
   setTab(t: 'open' | 'closed' | 'merged'): void {
@@ -63,7 +64,10 @@ export class PullRequestsPage implements OnInit {
   private loadAll(): void {
     const owner = this.owner();
     const repo = this.repoName();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
 
     Promise.all([

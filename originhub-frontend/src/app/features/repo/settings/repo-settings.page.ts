@@ -18,6 +18,7 @@ import { Component, inject, signal, computed, effect } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
+import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { RepoService } from '../../../core/repo/services/repo.service';
 import { RepoContextService } from '../../../core/repo/services/repo-context.service';
 import { ConfirmModalService } from '../../../core/confirm-modal/confirm-modal.service';
@@ -42,11 +43,16 @@ export class RepoSettingsPage {
 
   readonly generalName = signal('');
   readonly generalDescription = signal('');
+  readonly generalTopics = signal<string[]>([]);
+  readonly topicInput = signal('');
   readonly savingGeneral = signal(false);
   readonly generalError = signal<string | null>(null);
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private static readonly MAX_TOPICS = 6;
+
+  private readonly repoRouteParams = parentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRouteParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRouteParams().get('repo') ?? '');
 
   readonly repo = this.repoContext.repo;
 
@@ -62,6 +68,30 @@ export class RepoSettingsPage {
     if (r) {
       this.generalName.set(r.name);
       this.generalDescription.set(r.description ?? '');
+      const topics = r.topics;
+      this.generalTopics.set(topics?.length ? [...topics] : []);
+    }
+  }
+
+  addTopic(): void {
+    const value = this.topicInput().trim().toLowerCase();
+    if (!value) return;
+    const topics = this.generalTopics();
+    if (topics.length >= RepoSettingsPage.MAX_TOPICS) return;
+    if (!/^[a-zA-Z0-9-]+$/.test(value)) return;
+    if (topics.includes(value)) return;
+    this.generalTopics.set([...topics, value]);
+    this.topicInput.set('');
+  }
+
+  removeTopic(topic: string): void {
+    this.generalTopics.set(this.generalTopics().filter((t) => t !== topic));
+  }
+
+  onTopicKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      this.addTopic();
     }
   }
 
@@ -76,23 +106,29 @@ export class RepoSettingsPage {
     if (!owner || !repo) return;
     const name = this.generalName().trim();
     const description = this.generalDescription().trim() || undefined;
-    const ok = await this.confirmModal.confirm('Update repository settings?', 'Name and description will be saved.', {
-      confirmLabel: 'Save',
-      variant: 'primary',
-    });
+    const topics = this.generalTopics();
+    const ok = await this.confirmModal.confirm(
+      'Update repository settings?',
+      'Name, description, and topics will be saved.',
+      {
+        confirmLabel: 'Save',
+        variant: 'primary',
+      },
+    );
     if (!ok) return;
     this.savingGeneral.set(true);
     this.generalError.set(null);
     try {
-      const r = this.repo();
       const updated = await this.repoService.update(owner, repo, {
         name,
         description,
-        defaultBranch: r?.defaultBranch ?? 'main',
+        topics: topics.length > 0 ? topics : [],
       });
       this.repoContext.repo.set(updated);
       this.generalName.set(updated.name);
       this.generalDescription.set(updated.description ?? '');
+      const ut = updated.topics;
+      this.generalTopics.set(ut?.length ? [...ut] : []);
       if (updated.name !== repo) {
         await this.router.navigate(['/', owner, updated.name, 'settings']);
       }

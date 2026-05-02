@@ -18,7 +18,7 @@ import { Component, inject, signal, computed, SecurityContext, OnDestroy } from 
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { finalize, firstValueFrom } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
 import { FileSizePipe } from '../../../shared/pipes/file-size.pipe';
 import { BranchService } from '../../../core/branch/services/branch.service';
@@ -31,6 +31,7 @@ import type { BranchInfo } from '../../../domain/repository/models/branch-info.m
 import type { BlobResponse } from '../../../domain/repository/models/blob-response.model';
 import { decodeBase64Utf8 } from '../shared/utils/encoding';
 import { ToastService } from '../../../core/toast/toast.service';
+import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 
 @Component({
   selector: 'app-repo-home',
@@ -66,16 +67,24 @@ export class RepoHomePage implements OnDestroy {
 
   readonly cloneDialogOpen = signal(false);
   readonly copied = signal<'https' | 'ssh' | null>(null);
+  readonly zipDownloading = signal(false);
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRouteParams = parentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRouteParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRouteParams().get('repo') ?? '');
   readonly httpsCloneUrl = computed(() => `ssh://${environment.gitUrl}/${this.owner()}/${this.repoName()}.git`);
   readonly sshCloneUrl = computed(() => `ssh://${environment.gitUrl}/${this.owner()}/${this.repoName()}.git`);
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => {
-      this.loadData();
+    const parent = this.route.parent;
+    if (!parent) {
+      this.loading.set(false);
+      return;
+    }
+    parent.paramMap.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.selectedBranch.set('');
+      void this.loadData();
     });
   }
 
@@ -89,7 +98,10 @@ export class RepoHomePage implements OnDestroy {
   private async loadData(): Promise<void> {
     const owner = this.owner();
     const repo = this.repoName();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.isEmpty.set(false);
     try {
@@ -112,7 +124,6 @@ export class RepoHomePage implements OnDestroy {
       this.branches.set([]);
       this.isEmpty.set(true);
     } finally {
-      console.log('finally — loading false, isEmpty:', this.isEmpty(), 'tree:', this.tree().length);
       this.loading.set(false);
     }
   }
@@ -198,5 +209,63 @@ export class RepoHomePage implements OnDestroy {
 
   closeCloneDialog(): void {
     this.cloneDialogOpen.set(false);
+  }
+
+  downloadBranchZip(): void {
+    const owner = this.owner();
+    const repo = this.repoName();
+    const branch = this.branch();
+    if (!owner || !repo || !branch) return;
+
+    const url = `${environment.apiUrl}/api/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/archive/${encodeURIComponent(branch)}`;
+
+    this.zipDownloading.set(true);
+    this.http
+      .get(url, { responseType: 'blob', observe: 'response' })
+      .pipe(finalize(() => this.zipDownloading.set(false)))
+      .subscribe({
+        next: (resp) => {
+          const blob = resp.body;
+          if (!blob) {
+            this.toast.error('Could not download ZIP');
+            return;
+          }
+          const fromHeader = this.fileNameFromContentDisposition(resp.headers.get('Content-Disposition'));
+          const fileName = fromHeader ?? this.fallbackZipFileName(owner, repo, branch);
+          const objectUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = objectUrl;
+          a.download = fileName;
+          a.rel = 'noopener';
+          a.click();
+          URL.revokeObjectURL(objectUrl);
+        },
+        error: () => this.toast.error('Could not download ZIP'),
+      });
+  }
+
+  private fallbackZipFileName(owner: string, repo: string, branch: string): string {
+    const safe = (s: string) =>
+      s
+        .replace(/[\u0000-\u001f/\\:*?"<>|]/g, '-')
+        .replace(/--+/g, '-')
+        .trim() || 'archive';
+    return `${safe(owner)}-${safe(repo)}-${safe(branch)}.zip`;
+  }
+
+  private fileNameFromContentDisposition(header: string | null): string | null {
+    if (!header) return null;
+    const utf8 = /filename\*=(?:UTF-8'')?([^;]+)/i.exec(header);
+    if (utf8?.[1]) {
+      try {
+        return decodeURIComponent(utf8[1].trim().replace(/^"(.*)"$/, '$1'));
+      } catch {
+        return utf8[1].trim().replace(/^"(.*)"$/, '$1');
+      }
+    }
+    const ascii = /filename="([^"]+)"/i.exec(header);
+    if (ascii?.[1]) return ascii[1];
+    const plain = /filename=([^;]+)/i.exec(header);
+    return plain?.[1]?.trim().replace(/^"(.*)"$/, '$1') ?? null;
   }
 }

@@ -55,6 +55,9 @@ import {
   Home,
   Sun,
   Moon,
+  Tag,
+  Download,
+  Filter,
 } from 'lucide-angular';
 
 export const LUCIDE_ICONS = {
@@ -98,4 +101,7 @@ export const LUCIDE_ICONS = {
   Home,
   Sun,
   Moon,
+  Tag,
+  Download,
+  Filter,
 };

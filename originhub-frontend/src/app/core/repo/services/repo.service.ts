@@ -45,7 +45,11 @@ export class RepoService {
   }
 
   update(owner: string, repo: string, form: RepoForm): Promise<RepoInfo> {
-    const body = this.toCreateBody(form);
+    const body: Record<string, unknown> = {
+      name: form.name,
+      description: form.description ?? null,
+      topics: form.topics ?? [],
+    };
     return firstValueFrom(this.http.patch<RepoInfo>(`${this.api}/${owner}/${repo}`, body));
   }
 
@@ -57,7 +61,6 @@ export class RepoService {
     const body: Record<string, unknown> = {
       name: form.name,
       description: form.description ?? null,
-      defaultBranch: form.defaultBranch ?? 'main',
     };
     if (form.topics && form.topics.length > 0) {
       body['topics'] = Array.isArray(form.topics) ? form.topics : [...form.topics];

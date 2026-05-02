@@ -22,6 +22,7 @@ export class RelativeTimePipe implements PipeTransform {
   transform(value: string | Date | null | undefined): string {
     if (!value) return '';
     const date = typeof value === 'string' ? new Date(value) : value;
+    if (Number.isNaN(date.getTime())) return '';
     return formatDistanceToNow(date, { addSuffix: true });
   }
 }

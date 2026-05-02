@@ -58,7 +58,21 @@
         <option [value]="branch()">{{ branch() }}</option>
         }
       </select>
-      <button type="button" class="btn btn-sm btn-outline" (click)="openCloneDialog()">Code</button>
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="button" class="btn btn-sm btn-outline gap-1.5" (click)="openCloneDialog()">Code</button>
+        <button
+          type="button"
+          class="btn btn-sm btn-primary gap-1.5 shadow-sm"
+          [disabled]="zipDownloading()"
+          (click)="downloadBranchZip()"
+        >
+          @if (zipDownloading()) {
+          <span class="loading loading-spinner loading-xs"></span>
+          Preparing… } @else {
+          <lucide-icon name="download" class="size-4"></lucide-icon>
+          Download ZIP }
+        </button>
+      </div>
     </div>
   </div>
 
@@ -97,7 +111,7 @@
 
 @if (readmeHtml()) {
 <section class="repo-panel mt-6 overflow-hidden">
-  <div class="border-base-300 flex items-center gap-2 border-b px-4 py-3">
+  <div class="repo-toolbar flex items-center gap-2 px-4 py-3">
     <lucide-icon name="fileText" class="text-base-content/60 size-4"></lucide-icon>
     <span class="text-base-content text-sm font-medium">README.md</span>
   </div>

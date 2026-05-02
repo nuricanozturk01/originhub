@@ -18,6 +18,7 @@ import { Component, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, RouterLinkActive, RouterOutlet, ActivatedRoute } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
+import { paramMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { RepoService } from '../../../core/repo/services/repo.service';
 import { RepoContextService } from '../../../core/repo/services/repo-context.service';
 import { PullRequestService } from '../../../core/pull-request/services/pull-request.service';
@@ -39,18 +40,24 @@ export class RepoLayoutComponent {
   readonly repo = signal<RepoInfo | null>(null);
   readonly loading = signal(true);
 
-  readonly owner = computed(() => this.route.snapshot.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.paramMap.get('repo') ?? '');
+  private readonly routeParams = paramMapSignal(this.route);
+  readonly owner = computed(() => this.routeParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.routeParams().get('repo') ?? '');
   readonly prCount = signal(0);
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.loadRepo());
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(() => void this.loadRepo());
   }
 
   private async loadRepo(): Promise<void> {
     const owner = this.owner();
     const repo = this.repoName();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      this.repo.set(null);
+      this.repoContext.repo.set(null);
+      return;
+    }
     this.loading.set(true);
     try {
       const [repoData, prList] = await Promise.all([

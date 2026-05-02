@@ -23,7 +23,9 @@ import com.nuricanozturk.originhub.tree.dtos.BlobResponse;
 import com.nuricanozturk.originhub.tree.dtos.EntryType;
 import com.nuricanozturk.originhub.tree.dtos.TreeEntry;
 import com.nuricanozturk.originhub.tree.dtos.TreeResponse;
+import com.nuricanozturk.originhub.tree.utils.ArchivePathSupport;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -31,6 +33,8 @@ import java.util.Comparator;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.Repository;
@@ -146,6 +150,58 @@ public class TreeNonTxService {
           }
 
           return gitRepo.open(treeWalk.getObjectId(0)).getBytes();
+        }
+      }
+    }
+  }
+
+  /**
+   * Ensures {@code refs/heads/{branch}} exists so a streaming ZIP response can return 404 before
+   * headers are committed.
+   */
+  public void assertBranchExists(
+      final @NonNull String owner, final @NonNull String repoName, final @NonNull String branch)
+      throws IOException {
+
+    try (final var gitRepo = this.gitProvider.open(owner, repoName)) {
+      if (gitRepo.findRef(Constants.R_HEADS + branch) == null) {
+        throw new ItemNotFoundException("branchNotFound: " + branch);
+      }
+    }
+  }
+
+  /**
+   * Writes a ZIP of the branch tip tree to {@code out}. Does not buffer the whole archive in
+   * memory. Call {@link #assertBranchExists} first so missing branches surface as 404.
+   */
+  public void writeBranchZip(
+      final @NonNull String owner,
+      final @NonNull String repoName,
+      final @NonNull String branch,
+      final @NonNull OutputStream out)
+      throws IOException {
+
+    try (final var gitRepo = this.gitProvider.open(owner, repoName)) {
+
+      final var ref = gitRepo.findRef(Constants.R_HEADS + branch);
+
+      if (ref == null) {
+        throw new ItemNotFoundException("branchNotFound: " + branch);
+      }
+
+      try (final var revWalk = new RevWalk(gitRepo)) {
+        final var headCommit = revWalk.parseCommit(ref.getObjectId());
+        final var prefix = ArchivePathSupport.archiveTreePrefix(owner, repoName, branch);
+
+        try (final var git = Git.wrap(gitRepo)) {
+          git.archive()
+              .setFormat("zip")
+              .setTree(headCommit.getTree())
+              .setPrefix(prefix)
+              .setOutputStream(out)
+              .call();
+        } catch (final GitAPIException e) {
+          throw new IOException(e.getMessage(), e);
         }
       }
     }

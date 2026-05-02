@@ -8,7 +8,7 @@
     <span>{{ error() }}</span>
   </div>
   } @else if (commit(); as c) {
-  <div class="space-y-4 px-4 py-4">
+  <div class="repo-toolbar space-y-4 px-4 py-4">
     <div class="flex items-start gap-3">
       <app-avatar
         [avatarUrl]="c.author.avatarUrl"
@@ -49,10 +49,12 @@
       </a>
       }
     </div>
-    } @if (c.files.length) {
-    <div class="mt-6">
-      <h2 class="text-base-content mb-3 text-lg font-semibold">Changed files</h2>
-      <div class="border-base-300 overflow-hidden rounded-lg border">
+    }
+  </div>
+  @if (c.files.length) {
+  <div class="px-4 py-4">
+    <h2 class="text-base-content mb-3 text-lg font-semibold">Changed files</h2>
+    <div class="border-base-300 overflow-hidden rounded-lg border">
         @for (file of c.files; track file.newPath || file.oldPath) {
         <div class="border-base-300 border-b last:border-b-0">
           <button
@@ -89,9 +91,8 @@
           }
         </div>
         }
-      </div>
     </div>
-    }
   </div>
+  }
   }
 </section>

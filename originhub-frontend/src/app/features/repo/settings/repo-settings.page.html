@@ -1,74 +1,182 @@
-<div class="space-y-6">
-  <div role="tablist" class="tabs tabs-boxed mb-4">
-    <button type="button" class="tab" [class.tab-active]="activeTab() === 'general'" (click)="setTab('general')">
+<div class="repo-settings">
+  <p class="text-base-content/65 mb-5 text-sm sm:mb-6">
+    Manage this repository’s name, description, topics, and destructive actions.
+  </p>
+
+  <div
+    role="tablist"
+    class="repo-settings-tabs tabs mb-6 flex w-full flex-wrap gap-1 border-b border-base-300 bg-transparent pb-0.5"
+    aria-label="Repository settings sections"
+  >
+    <button
+      type="button"
+      role="tab"
+      id="repo-settings-tab-general"
+      class="tab flex-1 gap-2 rounded-md sm:flex-none"
+      [class.tab-active]="activeTab() === 'general'"
+      [attr.aria-selected]="activeTab() === 'general'"
+      aria-controls="repo-settings-panel-general"
+      (click)="setTab('general')"
+    >
+      <lucide-icon name="settings" class="size-4 shrink-0" aria-hidden="true"></lucide-icon>
       General
     </button>
-    <button type="button" class="tab" [class.tab-active]="activeTab() === 'danger'" (click)="setTab('danger')">
-      Danger Zone
+    <button
+      type="button"
+      role="tab"
+      id="repo-settings-tab-danger"
+      class="tab flex-1 gap-2 rounded-md sm:flex-none"
+      [class.tab-active]="activeTab() === 'danger'"
+      [attr.aria-selected]="activeTab() === 'danger'"
+      aria-controls="repo-settings-panel-danger"
+      (click)="setTab('danger')"
+    >
+      <lucide-icon name="alertTriangle" class="size-4 shrink-0" aria-hidden="true"></lucide-icon>
+      Danger
     </button>
   </div>
 
   @if (activeTab() === 'general') {
-  <div class="card bg-base-100 border-base-300 border shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title text-base-content">General</h2>
-      <p class="text-base-content/70 text-sm">Repository name, description, and visibility settings.</p>
-      <div class="form-control mt-4">
-        <label class="label" for="settings-owner">
-          <span class="label-text">Owner</span>
-        </label>
-        <input id="settings-owner" type="text" [value]="owner()" class="input input-bordered w-full" readonly />
+  <div
+    id="repo-settings-panel-general"
+    role="tabpanel"
+    aria-labelledby="repo-settings-tab-general"
+    class="repo-settings-panels"
+  >
+    <section class="repo-panel repo-settings-section relative overflow-hidden">
+      <div
+        class="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-primary/40 via-primary to-primary/40"
+      ></div>
+      <div class="p-5 sm:p-6">
+        <h2 class="text-base-content flex items-center gap-2 text-lg font-semibold">
+          <lucide-icon name="settings" class="text-primary size-5 shrink-0"></lucide-icon>
+          General
+        </h2>
+        <p class="text-base-content/65 mt-1 text-sm">
+          Repository name, description, topics, and read-only owner.
+        </p>
+
+        <div class="settings-stack mt-6">
+          <div class="settings-field">
+            <label for="settings-owner" class="settings-label">Owner</label>
+            <input
+              id="settings-owner"
+              type="text"
+              [value]="owner()"
+              class="settings-input input input-bordered border-base-300 bg-base-200/70 text-base-content/80 w-full cursor-not-allowed font-mono text-sm"
+              readonly
+              tabindex="-1"
+              aria-readonly="true"
+            />
+            <p class="settings-field-hint text-base-content/55">Cannot be changed from this screen.</p>
+          </div>
+          <div class="settings-field">
+            <label for="settings-repo-name" class="settings-label">Repository name</label>
+            <input
+              id="settings-repo-name"
+              type="text"
+              class="settings-input input input-bordered border-base-300 w-full font-mono text-sm"
+              placeholder="repo-name"
+              [ngModel]="generalName()"
+              (ngModelChange)="generalName.set($event)"
+              spellcheck="false"
+              autocomplete="off"
+            />
+          </div>
+          <div class="settings-field">
+            <label for="settings-description" class="settings-label">Description</label>
+            <textarea
+              id="settings-description"
+              class="settings-textarea textarea textarea-bordered border-base-300 w-full text-sm leading-relaxed"
+              placeholder="Brief description (optional)"
+              rows="4"
+              [ngModel]="generalDescription()"
+              (ngModelChange)="generalDescription.set($event)"
+            ></textarea>
+          </div>
+          <div class="settings-field">
+            <label for="settings-topic-input" class="settings-label">Topics</label>
+            <div class="topic-chips-field input input-bordered border-base-300 w-full">
+              <div class="topic-chips-inner">
+                @for (topic of generalTopics(); track topic) {
+                <span class="badge-pill badge-pill--topic topic-chip">
+                  <span class="topic-chip__text">{{ topic }}</span>
+                  <button
+                    type="button"
+                    class="topic-chip__remove"
+                    (click)="removeTopic(topic)"
+                    aria-label="Remove topic"
+                  >
+                    <lucide-icon name="x" class="size-3.5"></lucide-icon>
+                  </button>
+                </span>
+                } @if (generalTopics().length < 6) {
+                <input
+                  id="settings-topic-input"
+                  type="text"
+                  class="topic-chips-input"
+                  placeholder="Add topic…"
+                  [ngModel]="topicInput()"
+                  (ngModelChange)="topicInput.set($event)"
+                  (keydown)="onTopicKeydown($event)"
+                  (blur)="addTopic()"
+                />
+                }
+              </div>
+            </div>
+            <p class="settings-field-hint text-base-content/55">
+              Max 6 topics. Letters, numbers, hyphens only (same as when creating a repo).
+            </p>
+          </div>
+        </div>
+
+        @if (generalError()) {
+        <p class="text-error settings-field-hint mt-4" role="alert">{{ generalError() }}</p>
+        }
+
+        <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+          <button
+            type="button"
+            class="btn btn-primary min-h-11 w-full px-5 sm:w-auto sm:min-w-[11rem]"
+            [disabled]="savingGeneral()"
+            (click)="saveGeneral()"
+          >
+            @if (savingGeneral()) {
+            <span class="loading loading-spinner loading-sm"></span>
+            Saving… } @else { Save changes }
+          </button>
+        </div>
       </div>
-      <div class="form-control mt-2">
-        <label class="label" for="settings-repo-name">
-          <span class="label-text">Repository name</span>
-        </label>
-        <input
-          id="settings-repo-name"
-          type="text"
-          class="input input-bordered w-full"
-          placeholder="repo-name"
-          [ngModel]="generalName()"
-          (ngModelChange)="generalName.set($event)"
-        />
-      </div>
-      <div class="form-control mt-2">
-        <label class="label" for="settings-description">
-          <span class="label-text">Description</span>
-        </label>
-        <textarea
-          id="settings-description"
-          class="textarea textarea-bordered w-full"
-          placeholder="Brief description"
-          rows="3"
-          [ngModel]="generalDescription()"
-          (ngModelChange)="generalDescription.set($event)"
-        ></textarea>
-      </div>
-      @if (generalError()) {
-      <p class="text-error mt-2 text-sm">{{ generalError() }}</p>
-      }
-      <button type="button" class="btn btn-primary btn-sm mt-4" [disabled]="savingGeneral()" (click)="saveGeneral()">
-        @if (savingGeneral()) {
-        <span class="loading loading-spinner loading-sm"></span>
-        } @else { Save }
-      </button>
-    </div>
+    </section>
   </div>
   } @if (activeTab() === 'danger') {
-  <div class="card bg-base-100 border-error/30 border shadow-sm">
-    <div class="card-body">
-      <h2 class="card-title text-error flex items-center gap-2">
-        <lucide-icon name="alertTriangle" class="size-5"></lucide-icon>
-        Danger Zone
-      </h2>
-      <p class="text-base-content/70 text-sm">
-        Once you delete a repository, there is no going back. Please be certain.
-      </p>
-      <div class="card-actions mt-4 justify-end">
-        <button type="button" class="btn btn-error btn-outline" (click)="deleteRepo()">Delete this repository</button>
+  <div
+    id="repo-settings-panel-danger"
+    role="tabpanel"
+    aria-labelledby="repo-settings-tab-danger"
+    class="repo-settings-panels"
+  >
+    <section class="repo-panel border-error/35 repo-settings-section-danger relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-error/60"></div>
+      <div class="p-5 sm:p-6">
+        <h2 class="text-error flex items-center gap-2 text-lg font-semibold">
+          <lucide-icon name="alertTriangle" class="size-5 shrink-0"></lucide-icon>
+          Danger zone
+        </h2>
+        <p class="text-base-content/65 mt-1 text-sm">
+          Deleting removes this repository and its data permanently. This cannot be undone.
+        </p>
+        <div class="mt-6">
+          <button
+            type="button"
+            class="btn btn-error btn-outline min-h-11 w-full px-5 sm:w-auto"
+            (click)="deleteRepo()"
+          >
+            Delete this repository
+          </button>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
   }
 </div>

@@ -50,6 +50,12 @@ export class TokenService {
     return localStorage.getItem(USERNAME_KEY);
   }
 
+  /** When session exists but username was never stored (e.g. older OAuth flows), persist for dashboard APIs. */
+  persistUsernameIfMissing(username: string): void {
+    if (!username || localStorage.getItem(USERNAME_KEY)) return;
+    localStorage.setItem(USERNAME_KEY, username);
+  }
+
   getRefreshExpiresAt(): number | null {
     const val = localStorage.getItem(REFRESH_EXPIRES_KEY);
     return val ? parseInt(val, 10) : null;

@@ -154,8 +154,20 @@ a:not(.btn):hover {
   border-radius: var(--radius-box, 0.5rem);
 }
 
+/* Repo tab panels: title/tool strip above table or body — subtle tint + divider */
 .repo-toolbar {
-  background-color: var(--color-base-300);
+  background-color: color-mix(in oklch, var(--color-base-200) 52%, var(--color-base-100));
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+/* Repo chrome (owner/path + nav tabs) — slightly lifted from page bg */
+.repo-layout-repo-meta {
+  background-color: color-mix(in oklch, var(--color-base-200) 48%, var(--color-base-100));
+  border-bottom: 1px solid var(--color-base-300);
+}
+
+.repo-layout-tab-bar {
+  background-color: color-mix(in oklch, var(--color-base-200) 34%, var(--color-base-100));
   border-bottom: 1px solid var(--color-base-300);
 }
 

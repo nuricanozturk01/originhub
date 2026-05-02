@@ -1,6 +1,6 @@
 <div class="space-y-0">
   <div
-    class="bg-base-100 border-base-300 flex flex-col gap-4 rounded-t-xl border border-b-0 p-4 sm:flex-row sm:items-center sm:justify-between"
+    class="repo-toolbar border-base-300 flex flex-col gap-4 rounded-t-xl border border-b p-4 sm:flex-row sm:items-center sm:justify-between"
   >
     <div class="join border-base-300 overflow-hidden rounded-lg border">
       <button
@@ -49,7 +49,7 @@
   </div>
 
   @if (loading()) {
-  <div class="bg-base-100 border-base-300 overflow-hidden rounded-b-xl border">
+  <div class="bg-base-100 border-base-300 overflow-hidden rounded-b-xl border border-t-0">
     @for (i of [1, 2, 3, 4, 5]; track i) {
     <div class="border-base-300 flex animate-pulse items-center gap-4 border-b px-6 py-5 last:border-b-0">
       <div class="bg-base-200 h-10 w-10 shrink-0 rounded-full"></div>
@@ -61,7 +61,7 @@
     }
   </div>
   } @else {
-  <div class="bg-base-100 border-base-300 overflow-hidden rounded-b-xl border">
+  <div class="bg-base-100 border-base-300 overflow-hidden rounded-b-xl border border-t-0">
     @for (pr of filteredPulls(); track pr.id) {
     <a
       [routerLink]="['/', owner(), repoName(), 'pulls', pr.number]"

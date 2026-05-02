@@ -15,7 +15,9 @@
 ///
 
 import { Component, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { BranchService } from '../../../core/branch/services/branch.service';
@@ -50,17 +52,21 @@ export class NewPullRequestPage {
   readonly isDraft = signal(false);
 
   readonly defaultBranch = this.repoContext.defaultBranch;
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRouteParams = parentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRouteParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRouteParams().get('repo') ?? '');
 
   constructor() {
-    this.loadBranches();
+    this.route.parent!.paramMap.pipe(takeUntilDestroyed()).subscribe(() => void this.loadBranches());
   }
 
   private async loadBranches(): Promise<void> {
     const owner = this.owner();
     const repo = this.repoName();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     try {
       const data = await this.branchService.getAll(owner, repo);

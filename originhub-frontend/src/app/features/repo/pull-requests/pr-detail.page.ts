@@ -17,6 +17,8 @@
 import { Component, inject, signal, computed, effect, NgZone } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { merge } from 'rxjs';
+import { parentParamMapSignal, paramMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
@@ -81,10 +83,12 @@ export class PrDetailPage {
   } | null>(null);
   readonly lineCommentBody = signal('');
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private readonly parentPm = parentParamMapSignal(this.route);
+  private readonly localPm = paramMapSignal(this.route);
+  readonly owner = computed(() => this.parentPm().get('owner') ?? '');
+  readonly repoName = computed(() => this.parentPm().get('repo') ?? '');
   readonly number = computed(() => {
-    const n = this.route.snapshot.paramMap.get('number');
+    const n = this.localPm().get('number');
     return n ? parseInt(n, 10) : 0;
   });
 
@@ -104,7 +108,9 @@ export class PrDetailPage {
   readonly generalComments = computed(() => this.comments().filter((c) => !c.filePath && !c.lineNumber));
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.loadData());
+    merge(this.route.parent!.paramMap, this.route.paramMap)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => void this.loadData());
     if (this.tokenService.isLoggedIn()) {
       this.userService
         .getMe()

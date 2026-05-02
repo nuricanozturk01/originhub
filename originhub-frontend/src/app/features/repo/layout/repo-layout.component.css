@@ -2,6 +2,14 @@
   display: block;
 }
 
+@media (max-width: 639px) {
+  .repo-tab-scroll .repo-tabs.tabs {
+    flex-wrap: nowrap;
+    width: max-content;
+    max-width: none;
+  }
+}
+
 /* Compact repo nav: default .tab min-height is tall for touch targets */
 .repo-tabs.tabs .tab {
   min-height: 0;
