@@ -92,15 +92,18 @@
           <div>
             <h2 id="profile-repos-heading" class="text-base-content text-lg font-semibold">Repositories</h2>
             <p class="text-base-content/60 mt-0.5 text-sm">
-              @if (repoQuery().trim()) { {{ filteredRepos().length }} matching } @else { {{ repoStats().total }} total }
+              @if (hasActiveFilters()) { {{ filteredRepos().length }} of {{ repoStats().total }} shown } @else { {{
+              repoStats().total }} total }
             </p>
           </div>
           <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <label class="input input-bordered border-base-300 flex w-full items-center gap-2 sm:max-w-xs">
+            <label
+              class="input input-bordered border-base-300 flex min-h-10 w-full min-w-0 items-center gap-2 sm:max-w-xs"
+            >
               <lucide-icon name="search" class="text-base-content/45 size-4 shrink-0"></lucide-icon>
               <input
                 type="search"
-                class="grow bg-transparent outline-none"
+                class="min-w-0 grow bg-transparent outline-none"
                 placeholder="Find a repository…"
                 autocomplete="off"
                 [value]="repoQuery()"
@@ -120,6 +123,15 @@
               <button
                 type="button"
                 class="btn btn-sm join-item flex-1 sm:flex-none"
+                [class.btn-primary]="sortBy() === 'created'"
+                [class.btn-ghost]="sortBy() !== 'created'"
+                (click)="setSort('created')"
+              >
+                Newest
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm join-item flex-1 sm:flex-none"
                 [class.btn-primary]="sortBy() === 'name'"
                 [class.btn-ghost]="sortBy() !== 'name'"
                 (click)="setSort('name')"
@@ -130,7 +142,35 @@
           </div>
         </div>
 
-        @if (repos().length === 0) {
+        @if (allTopics().length > 0) {
+        <div class="repo-panel profile-topic-bar px-4 py-3">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+            <span
+              class="text-base-content/70 flex shrink-0 items-center gap-1.5 text-xs font-medium tracking-wide uppercase"
+            >
+              <lucide-icon name="tag" class="size-3.5"></lucide-icon>
+              Topics
+            </span>
+            <div class="flex min-w-0 flex-1 flex-wrap gap-2" role="group" aria-label="Filter by topic">
+              @for (topic of allTopics(); track topic) {
+              <button
+                type="button"
+                class="profile-topic-chip"
+                [class.profile-topic-chip--active]="isTopicActive(topic)"
+                [attr.aria-pressed]="isTopicActive(topic)"
+                (click)="toggleTopic(topic)"
+              >
+                {{ topic }}
+              </button>
+              } @if (selectedTopics().length > 0) {
+              <button type="button" class="btn btn-ghost btn-xs gap-1 normal-case" (click)="clearTopicFilters()">
+                Clear topics
+              </button>
+              }
+            </div>
+          </div>
+        </div>
+        } @if (repos().length === 0) {
         <div class="repo-panel">
           <div class="flex flex-col items-center px-6 py-14 text-center">
             <lucide-icon name="bookOpen" class="text-base-content/35 mb-4 size-14"></lucide-icon>
@@ -150,9 +190,14 @@
         } @else if (filteredRepos().length === 0) {
         <div class="repo-panel">
           <div class="flex flex-col items-center px-6 py-12 text-center">
-            <lucide-icon name="search" class="text-base-content/35 mb-3 size-10"></lucide-icon>
-            <p class="text-base-content font-medium">No repositories match “{{ repoQuery().trim() }}”</p>
-            <button type="button" class="btn btn-ghost btn-sm mt-3" (click)="repoQuery.set('')">Clear search</button>
+            <lucide-icon name="filter" class="text-base-content/35 mb-3 size-10"></lucide-icon>
+            <p class="text-base-content font-medium">No repositories match your filters</p>
+            <p class="text-base-content/60 mt-1 max-w-sm text-sm">
+              Adjust search or topic filters to see more results.
+            </p>
+            <button type="button" class="btn btn-outline btn-sm border-base-300 mt-4" (click)="clearFilters()">
+              Clear all filters
+            </button>
           </div>
         </div>
         } @else {
@@ -185,12 +230,12 @@
                   </div>
                   @if (repo.description) {
                   <p class="text-base-content/70 mt-1 line-clamp-2 text-sm">{{ repo.description }}</p>
-                  } @if (repo.topics.length) {
+                  } @if ((repo.topics?.length ?? 0) > 0) {
                   <div class="mt-2 flex flex-wrap gap-1">
-                    @for (topic of repo.topics.slice(0, 5); track topic) {
+                    @for (topic of (repo.topics ?? []).slice(0, 5); track topic) {
                     <span class="badge-pill badge-pill--topic">{{ topic }}</span>
-                    } @if (repo.topics.length > 5) {
-                    <span class="text-base-content/50 text-xs">+{{ repo.topics.length - 5 }}</span>
+                    } @if ((repo.topics?.length ?? 0) > 5) {
+                    <span class="text-base-content/50 text-xs">+{{ (repo.topics?.length ?? 0) - 5 }}</span>
                     }
                   </div>
                   }

@@ -53,62 +53,38 @@
           </div>
 
           <div class="form-control">
-            <label class="label" for="defaultBranch">
-              <span class="label-text">Default branch</span>
-            </label>
-            <input
-              id="defaultBranch"
-              type="text"
-              formControlName="defaultBranch"
-              list="defaultBranchList"
-              placeholder="master"
-              class="input input-bordered w-full"
-            />
-            <datalist id="defaultBranchList">
-              @for (branch of defaultBranchOptions; track branch) {
-              <option [value]="branch"></option>
-              }
-            </datalist>
-            <label class="label" for="defaultBranch">
-              <span class="label-text-alt text-base-content/60"
-                >Initial branch name (letters, numbers, hyphens, underscores, slashes)</span
-              >
-            </label>
-          </div>
-
-          <div class="form-control">
-            <label class="label" for="topics">
+            <label class="label" for="topic-input">
               <span class="label-text">Topics (optional)</span>
             </label>
-            <div class="input input-bordered flex min-h-12 flex-wrap gap-2 rounded-lg p-2">
-              @for (topic of form.get('topics')?.value ?? []; track topic) {
-              <span class="badge-pill badge-pill--topic gap-1">
-                {{ topic }}
-                <button
-                  type="button"
-                  class="btn btn-ghost btn-xs btn-circle"
-                  (click)="removeTopic(topic)"
-                  aria-label="Remove topic"
-                >
-                  ×
-                </button>
-              </span>
-              } @if ((form.get('topics')?.value ?? []).length < 10) {
-              <input
-                id="topics"
-                type="text"
-                class="min-w-24 grow bg-transparent outline-none"
-                placeholder="Add topic..."
-                [value]="topicInput()"
-                (input)="topicInput.set($any($event.target).value)"
-                (keydown)="onTopicKeydown($event)"
-                (blur)="addTopic()"
-              />
-              }
+            <div class="topic-chips-field input input-bordered w-full">
+              <div class="topic-chips-inner">
+                @for (topic of form.get('topics')?.value ?? []; track topic) {
+                <span class="badge-pill badge-pill--topic topic-chip">
+                  <span class="topic-chip__text">{{ topic }}</span>
+                  <button
+                    type="button"
+                    class="topic-chip__remove"
+                    (click)="removeTopic(topic)"
+                    aria-label="Remove topic"
+                  >
+                    <lucide-icon name="x" class="size-3.5"></lucide-icon>
+                  </button>
+                </span>
+                } @if ((form.get('topics')?.value ?? []).length < 6) {
+                <input
+                  id="topic-input"
+                  type="text"
+                  class="topic-chips-input"
+                  placeholder="Add topic..."
+                  [value]="topicInput()"
+                  (input)="topicInput.set($any($event.target).value)"
+                  (keydown)="onTopicKeydown($event)"
+                  (blur)="addTopic()"
+                />
+                }
+              </div>
             </div>
-            <label class="label" for="topics">
-              <span class="label-text-alt text-base-content/60">Max 10 topics. Letters, numbers, hyphens only.</span>
-            </label>
+            <p class="label-text-alt text-base-content/60 mt-1 px-1">Max 6 topics. Letters, numbers, hyphens only.</p>
           </div>
 
           <button type="submit" class="btn btn-primary w-full" [disabled]="form.invalid || loading()">

@@ -21,11 +21,16 @@ import com.nuricanozturk.originhub.shared.repo.entities.Repo;
 import com.nuricanozturk.originhub.shared.tenant.entities.Tenant;
 import org.jspecify.annotations.NonNull;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public interface RepoMapper {
 
+  @Mapping(
+      target = "topics",
+      expression =
+          "java(repo.getTopics() != null ? repo.getTopics() : java.util.Collections.emptySet())")
   @NonNull RepoInfo toDto(@NonNull Repo repo);
 
   default TenantRepoInfo mapOwner(final Tenant owner) {

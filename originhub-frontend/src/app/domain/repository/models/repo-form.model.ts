@@ -22,5 +22,4 @@ export interface RepoForm {
   name: string;
   description?: string;
   topics?: string[];
-  defaultBranch?: string;
 }

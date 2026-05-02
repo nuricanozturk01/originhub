@@ -17,6 +17,8 @@
 import { Component, inject, signal, computed, ViewEncapsulation, OnDestroy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
+import { merge } from 'rxjs';
+import { grandParentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
@@ -60,8 +62,9 @@ export class BlobPage implements OnDestroy {
   private objectUrlToRevoke: string | null = null;
   private copiedTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly owner = computed(() => this.route.snapshot.parent?.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRootParams = grandParentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRootParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRootParams().get('repo') ?? '');
 
   readonly fileName = computed(() => {
     const p = this.path();
@@ -94,8 +97,10 @@ export class BlobPage implements OnDestroy {
   });
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.parseUrlAndLoad());
-    this.route.url.pipe(takeUntilDestroyed()).subscribe(() => this.parseUrlAndLoad());
+    const gp = this.route.parent?.parent;
+    merge(gp?.paramMap ?? this.route.paramMap, this.route.paramMap, this.route.url)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.parseUrlAndLoad());
   }
 
   private parseUrlAndLoad(): void {
@@ -118,7 +123,10 @@ export class BlobPage implements OnDestroy {
     const repo = this.repoName();
     const branch = this.branch();
     const path = this.path();
-    if (!owner || !repo || !path) return;
+    if (!owner || !repo || !path) {
+      this.loading.set(false);
+      return;
+    }
     this.revokeBlobUrl();
     this.pdfObjectUrl.set(null);
     this.rawBlobUrl.set(null);

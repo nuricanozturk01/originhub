@@ -40,13 +40,7 @@ public class RepoForm {
   @Size(max = 500)
   private String description;
 
-  @Size(max = 10, message = "Maximum 10 topics allowed")
+  @Size(max = 6, message = "Maximum 6 topics allowed")
   private Set<@NotNull @Size(min = 1, max = 50) @Pattern(regexp = "^[a-zA-Z0-9\\-]+$") String>
       topics;
-
-  @Size(min = 1, max = 255)
-  @Pattern(
-      regexp = "^[a-zA-Z0-9_\\-\\/]+$",
-      message = "Branch name can only contain letters, numbers, hyphens, underscores and slashes")
-  private String defaultBranch = "master";
 }

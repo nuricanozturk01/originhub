@@ -39,7 +39,7 @@ export class CreateRepoPage {
   readonly error = signal<string | null>(null);
   readonly topicInput = signal('');
 
-  readonly defaultBranchOptions = ['master', 'main', 'develop'];
+  private static readonly MAX_TOPICS = 6;
 
   readonly form = this.fb.nonNullable.group({
     name: [
@@ -52,10 +52,6 @@ export class CreateRepoPage {
       ],
     ],
     description: ['', [Validators.maxLength(500)]],
-    defaultBranch: [
-      'master',
-      [Validators.minLength(1), Validators.maxLength(255), Validators.pattern(/^[a-zA-Z0-9_/-]+$/)],
-    ],
     topics: [[] as string[]],
   });
 
@@ -63,7 +59,7 @@ export class CreateRepoPage {
     const value = this.topicInput().trim().toLowerCase();
     if (!value) return;
     const topics = this.form.getRawValue().topics;
-    if (topics.length >= 10) return;
+    if (topics.length >= CreateRepoPage.MAX_TOPICS) return;
     if (!/^[a-zA-Z0-9-]+$/.test(value)) return;
     if (topics.includes(value)) return;
     this.form.patchValue({ topics: [...topics, value] });
@@ -91,7 +87,6 @@ export class CreateRepoPage {
       const repo = await this.repoService.create({
         name: raw.name,
         description: raw.description || undefined,
-        defaultBranch: raw.defaultBranch || 'master',
         topics: raw.topics.length > 0 ? raw.topics : undefined,
       });
       this.toast.success('Repository created successfully');

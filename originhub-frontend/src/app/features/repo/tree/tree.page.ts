@@ -17,6 +17,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { merge } from 'rxjs';
+import { grandParentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
@@ -43,8 +45,9 @@ export class TreePage {
   readonly branch = signal('');
   readonly path = signal('');
 
-  readonly owner = computed(() => this.route.snapshot.parent?.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRootParams = grandParentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRootParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRootParams().get('repo') ?? '');
 
   readonly breadcrumbItems = computed((): BreadcrumbItem[] => {
     const p = this.path();
@@ -57,8 +60,10 @@ export class TreePage {
   });
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.parseUrlAndLoad());
-    this.route.url.pipe(takeUntilDestroyed()).subscribe(() => this.parseUrlAndLoad());
+    const gp = this.route.parent?.parent;
+    merge(gp?.paramMap ?? this.route.paramMap, this.route.paramMap, this.route.url)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.parseUrlAndLoad());
   }
 
   private parseUrlAndLoad(): void {
@@ -80,7 +85,10 @@ export class TreePage {
     const repo = this.repoName();
     const branch = this.branch();
     const path = this.path();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     const pathSuffix = path ? `/${path}` : '';
     const url = `${environment.apiUrl}/api/repos/${owner}/${repo}/tree/${branch}${pathSuffix}`;

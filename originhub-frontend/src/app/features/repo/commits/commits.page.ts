@@ -17,6 +17,12 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router, RouterLink, ActivatedRoute } from '@angular/router';
+import { merge } from 'rxjs';
+import {
+  parentParamMapSignal,
+  paramMapSignal,
+  queryParamMapSignal,
+} from '../../../core/repo/utils/route-param-signals';
 import { LucideAngularModule } from 'lucide-angular';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
@@ -48,18 +54,23 @@ export class CommitsPage {
   readonly hasNext = signal(false);
   readonly hasPrevious = signal(false);
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
-  readonly branch = computed(() => this.route.snapshot.paramMap.get('branch') ?? this.repoContext.defaultBranch());
+  private readonly parentPm = parentParamMapSignal(this.route);
+  private readonly localPm = paramMapSignal(this.route);
+  private readonly queryPm = queryParamMapSignal(this.route);
+
+  readonly owner = computed(() => this.parentPm().get('owner') ?? '');
+  readonly repoName = computed(() => this.parentPm().get('repo') ?? '');
+  readonly branch = computed(() => this.localPm().get('branch') ?? this.repoContext.defaultBranch());
   readonly defaultBranch = this.repoContext.defaultBranch;
   readonly currentPage = computed(() => {
-    const p = this.route.snapshot.queryParamMap.get('page');
+    const p = this.queryPm().get('page');
     return p ? parseInt(p, 10) : 0;
   });
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.loadData());
-    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe(() => this.loadData());
+    merge(this.route.parent!.paramMap, this.route.paramMap, this.route.queryParamMap)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => void this.loadData());
   }
 
   async loadData(): Promise<void> {
@@ -67,7 +78,10 @@ export class CommitsPage {
     const repo = this.repoName();
     const branch = this.branch();
     const page = this.currentPage();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     try {

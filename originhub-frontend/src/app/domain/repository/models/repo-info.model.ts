@@ -26,13 +26,14 @@ export interface RepoInfoOwner {
 
 export interface RepoInfo {
   id: string;
-  owner: RepoInfoOwner;
+  owner?: RepoInfoOwner | null;
   name: string;
   description: string | null;
   isPrivate: boolean;
   isArchived: boolean;
   defaultBranch: string;
-  topics: string[];
+  /** May be null/omitted from API for older rows. */
+  topics?: string[] | null;
   createdAt: string;
   updatedAt: string;
 }

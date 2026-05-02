@@ -15,10 +15,12 @@
 ///
 
 import { Component, inject, signal, computed } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
+import { parentParamMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { BranchService } from '../../../core/branch/services/branch.service';
 import { RepoContextService } from '../../../core/repo/services/repo-context.service';
 import { ConfirmModalService } from '../../../core/confirm-modal/confirm-modal.service';
@@ -48,8 +50,9 @@ export class BranchesPage {
   readonly branchToSetDefault = signal<BranchInfo | null>(null);
   readonly actionLoading = signal(false);
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
+  private readonly repoRouteParams = parentParamMapSignal(this.route);
+  readonly owner = computed(() => this.repoRouteParams().get('owner') ?? '');
+  readonly repoName = computed(() => this.repoRouteParams().get('repo') ?? '');
   readonly defaultBranch = this.repoContext.defaultBranch;
   readonly canEdit = this.repoContext.canEdit;
 
@@ -59,13 +62,16 @@ export class BranchesPage {
   });
 
   constructor() {
-    this.loadBranches();
+    this.route.parent!.paramMap.pipe(takeUntilDestroyed()).subscribe(() => void this.loadBranches());
   }
 
   async loadBranches(): Promise<void> {
     const owner = this.owner();
     const repo = this.repoName();
-    if (!owner || !repo) return;
+    if (!owner || !repo) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     try {

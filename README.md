@@ -249,20 +249,19 @@ Edit the variables at the top of the `Makefile` before running — at minimum se
 
 OriginHub is under active development. Here's what's planned:
 
-- [ ] HTTPS Git support
-- [ ] Public repositories
-- [ ] Fork and star repositories
+- [X] HTTPS Git support
+- [X] ~~Public repositories~~ **(This is a opensource project, not cloud. This feature unnecessary)**
+- [X] ~~Fork and star repositories~~ **(This is a opensource project, not cloud. This feature unnecessary)**
 - [ ] Actions — CI/CD (self-hosted runner)
 - [ ] Team collaboration & organization support
 - [ ] Project board (Kanban) integrated with repositories
 - [ ] Webhooks
-- [ ] Custom domain support
+- [X] ~~Custom domain support~~ **(This is a opensource project, not cloud. This feature unnecessary)**
 - [ ] Repository transfer (between accounts, and auto-import from GitHub / GitLab)
 - [ ] Code snippets (Gist-like)
 - [ ] Two-factor authentication (TOTP)
 - [ ] Tags and releases
 - [ ] [Repsy](https://repsy.io) package management integration
-- [ ] Organization support
 
 ---
 

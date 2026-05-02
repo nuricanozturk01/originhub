@@ -25,6 +25,14 @@ import { UserService } from '../../core/user/services/user.service';
 import { TokenService } from '../../core/auth/services/token.service';
 import type { User } from '../../domain/auth/models/user.model';
 import type { RepoInfo } from '../../domain/repository/models/repo-info.model';
+import { paramMapSignal } from '../../core/repo/utils/route-param-signals';
+import {
+  collectTopicsLower,
+  compareReposBySort,
+  matchesRepoSearch,
+  matchesTopicFilter,
+  type RepoListSort,
+} from '../../shared/utils/repo-list.utils';
 
 @Component({
   selector: 'app-user-profile',
@@ -43,9 +51,11 @@ export class UserProfilePage {
   readonly repos = signal<RepoInfo[]>([]);
   readonly loading = signal(true);
   readonly repoQuery = signal('');
-  readonly sortBy = signal<'updated' | 'name'>('updated');
+  readonly sortBy = signal<RepoListSort>('updated');
+  readonly selectedTopics = signal<string[]>([]);
 
-  readonly username = computed(() => this.route.snapshot.paramMap.get('username') ?? '');
+  private readonly profileParams = paramMapSignal(this.route);
+  readonly username = computed(() => this.profileParams().get('username') ?? '');
 
   readonly isOwnProfile = computed(() => {
     const me = this.tokenService.getUsername();
@@ -64,37 +74,52 @@ export class UserProfilePage {
     };
   });
 
+  readonly allTopics = computed(() => collectTopicsLower(this.repos()));
+
+  readonly hasActiveFilters = computed(() => this.repoQuery().trim().length > 0 || this.selectedTopics().length > 0);
+
   readonly filteredRepos = computed(() => {
     const q = this.repoQuery().trim().toLowerCase();
-    let list = this.repos();
-    if (q) {
-      list = list.filter(
-        (r) =>
-          r.name.toLowerCase().includes(q) ||
-          (r.description ?? '').toLowerCase().includes(q) ||
-          r.topics.some((t) => t.toLowerCase().includes(q)),
-      );
-    }
-    const sorted = [...list].sort((a, b) => {
-      if (this.sortBy() === 'name') {
-        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
-      }
-      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-    });
-    return sorted;
+    const topics = this.selectedTopics();
+    const sort = this.sortBy();
+    const list = this.repos().filter((r) => matchesRepoSearch(r, q) && matchesTopicFilter(r, topics));
+    return [...list].sort((a, b) => compareReposBySort(a, b, sort));
   });
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.loadData());
+    this.route.paramMap.pipe(takeUntilDestroyed()).subscribe(() => void this.loadData());
   }
 
-  setSort(mode: 'updated' | 'name'): void {
+  setSort(mode: RepoListSort): void {
     this.sortBy.set(mode);
   }
 
   onSearchInput(event: Event): void {
     const v = (event.target as HTMLInputElement).value;
     this.repoQuery.set(v);
+  }
+
+  toggleTopic(topicLower: string): void {
+    const k = topicLower.toLowerCase();
+    const cur = this.selectedTopics();
+    if (cur.includes(k)) {
+      this.selectedTopics.set(cur.filter((x) => x !== k));
+    } else {
+      this.selectedTopics.set([...cur, k]);
+    }
+  }
+
+  isTopicActive(topicLower: string): boolean {
+    return this.selectedTopics().includes(topicLower.toLowerCase());
+  }
+
+  clearFilters(): void {
+    this.repoQuery.set('');
+    this.selectedTopics.set([]);
+  }
+
+  clearTopicFilters(): void {
+    this.selectedTopics.set([]);
   }
 
   private async loadData(): Promise<void> {

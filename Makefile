@@ -6,35 +6,35 @@ POSTGRES_NAME := originhub-postgres
 APP_NAME      := originhub
 IMAGE         := repo.repsy.io/nuricanozturk/originhub/originhub-os:latest
 
-POSTGRES_DB   := originhub
-POSTGRES_USER := admin
-POSTGRES_PASS := admin123
+POSTGRES_DB    := originhub
+POSTGRES_USER  := admin
+POSTGRES_PASS  := admin123
 
-JWT_SECRET    := 995a44f7111b23ebed8ad37e8b9cbe380dd5022f8b3bf67b16c8e223456f74a0
-GIT_REPO_ROOT := /data/repos
-REPOS_VOLUME  := originhub-repos
+JWT_SECRET     := 995a44f7111b23ebed8ad37e8b9cbe380dd5022f8b3bf67b16c8e223456f74a0
+GIT_REPO_ROOT  := /data/repos
+REPOS_VOLUME   := originhub-repos
 SPRING_PROFILE := os
 
-HTTP_PORT     := 8080
-SSH_PORT      := 2222
+HTTP_PORT := 8080
+SSH_PORT  := 2222
 
 # Google Client
-GOOGLE_CLIENT_ID := YOUR_CLIENT
+GOOGLE_CLIENT_ID     := YOUR_CLIENT
 GOOGLE_CLIENT_SECRET := YOUR_SECRET
 
 # Github Client
-GITHUB_CLIENT_ID := YOUR_CLIENT
+GITHUB_CLIENT_ID     := YOUR_CLIENT
 GITHUB_CLIENT_SECRET := YOUR_SECRET
 
 # Gitlab Client
-GITLAB_CLIENT_ID := YOUR_CLIENT
+GITLAB_CLIENT_ID     := YOUR_CLIENT
 GITLAB_CLIENT_SECRET := YOUR_SECRET
 
 # ──────────────────────────────────────────────
 .PHONY: all up down start stop restart logs logs-db ps \
-        network network-rm \
-        db app \
-        clean purge help
+  network network-rm \
+  db app \
+  clean purge help
 
 all: up
 

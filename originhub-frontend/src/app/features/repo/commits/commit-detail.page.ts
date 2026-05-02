@@ -17,6 +17,8 @@
 import { Component, inject, signal, computed } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { merge } from 'rxjs';
+import { parentParamMapSignal, paramMapSignal } from '../../../core/repo/utils/route-param-signals';
 import { LucideAngularModule } from 'lucide-angular';
 import { AvatarComponent } from '../../../shared/components/avatar/avatar.component';
 import { RelativeTimePipe } from '../../../shared/pipes/relative-time.pipe';
@@ -42,20 +44,27 @@ export class CommitDetailPage {
   readonly error = signal<string | null>(null);
   readonly expandedFiles = signal<Set<string>>(new Set());
 
-  readonly owner = computed(() => this.route.snapshot.parent?.paramMap.get('owner') ?? '');
-  readonly repoName = computed(() => this.route.snapshot.parent?.paramMap.get('repo') ?? '');
-  readonly sha = computed(() => this.route.snapshot.paramMap.get('sha') ?? '');
+  private readonly parentPm = parentParamMapSignal(this.route);
+  private readonly localPm = paramMapSignal(this.route);
+  readonly owner = computed(() => this.parentPm().get('owner') ?? '');
+  readonly repoName = computed(() => this.parentPm().get('repo') ?? '');
+  readonly sha = computed(() => this.localPm().get('sha') ?? '');
   readonly defaultBranch = this.repoContext.defaultBranch;
 
   constructor() {
-    this.route.params.pipe(takeUntilDestroyed()).subscribe(() => this.loadCommit());
+    merge(this.route.parent!.paramMap, this.route.paramMap)
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => void this.loadCommit());
   }
 
   private async loadCommit(): Promise<void> {
     const owner = this.owner();
     const repo = this.repoName();
     const sha = this.sha();
-    if (!owner || !repo || !sha) return;
+    if (!owner || !repo || !sha) {
+      this.loading.set(false);
+      return;
+    }
     this.loading.set(true);
     this.error.set(null);
     try {

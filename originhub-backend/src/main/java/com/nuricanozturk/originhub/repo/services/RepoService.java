@@ -39,6 +39,9 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class RepoService {
 
+  /** Initial branch name for new repositories; not client-configurable. */
+  public static final @NonNull String NEW_REPO_DEFAULT_BRANCH = "main";
+
   private final @NonNull RepoRepository repoRepository;
   private final @NonNull TenantRepository tenantRepository;
   private final @NonNull RepoMapper repoMapper;
@@ -59,7 +62,7 @@ public class RepoService {
     repoObj.setOwner(tenant);
     repoObj.setName(form.getName());
     repoObj.setDescription(form.getDescription());
-    repoObj.setDefaultBranch(form.getDefaultBranch());
+    repoObj.setDefaultBranch(NEW_REPO_DEFAULT_BRANCH);
     repoObj.setTopics(form.getTopics());
 
     final var repo = this.repoRepository.save(repoObj);
@@ -91,7 +94,9 @@ public class RepoService {
     }
 
     repo.setDescription(form.getDescription());
-    repo.setTopics(form.getTopics());
+    if (form.getTopics() != null) {
+      repo.setTopics(form.getTopics());
+    }
 
     final var updatedRepo = this.repoRepository.save(repo);
 

@@ -16,6 +16,7 @@
 
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 import { SshKeyService } from '../../core/ssh/services/ssh-key.service';
 import { ConfirmModalService } from '../../core/confirm-modal/confirm-modal.service';
@@ -27,7 +28,7 @@ import type { SshKeyInfo } from '../../domain/ssh/models/ssh-key-info.model';
 @Component({
   selector: 'app-user-settings',
   standalone: true,
-  imports: [LucideAngularModule, FormsModule],
+  imports: [LucideAngularModule, FormsModule, RouterLink],
   templateUrl: './user-settings.page.html',
   styleUrl: './user-settings.page.css',
 })

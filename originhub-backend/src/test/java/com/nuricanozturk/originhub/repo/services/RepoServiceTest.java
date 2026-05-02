@@ -62,7 +62,7 @@ class RepoServiceTest {
   @DisplayName("create throws ItemNotFoundException when tenant not found")
   void create_throwsUserNotFound_whenTenantMissing() {
     UUID tenantId = UUID.randomUUID();
-    RepoForm form = RepoForm.builder().name("my-repo").defaultBranch("main").build();
+    RepoForm form = RepoForm.builder().name("my-repo").build();
     when(tenantRepository.findById(tenantId)).thenReturn(Optional.empty());
 
     assertThatThrownBy(() -> repoService.create(tenantId, form))
@@ -78,12 +78,7 @@ class RepoServiceTest {
     tenant.setId(tenantId);
     tenant.setUsername("alice");
     RepoForm form =
-        RepoForm.builder()
-            .name("my-repo")
-            .description("desc")
-            .defaultBranch("main")
-            .topics(Set.of("java"))
-            .build();
+        RepoForm.builder().name("my-repo").description("desc").topics(Set.of("java")).build();
     Repo savedRepo = new Repo();
     savedRepo.setId(UUID.randomUUID());
     savedRepo.setName("my-repo");
@@ -99,7 +94,8 @@ class RepoServiceTest {
     ArgumentCaptor<Repo> repoCaptor = ArgumentCaptor.forClass(Repo.class);
     verify(repoRepository).save(repoCaptor.capture());
     assertThat(repoCaptor.getValue().getName()).isEqualTo("my-repo");
-    assertThat(repoCaptor.getValue().getDefaultBranch()).isEqualTo("main");
+    assertThat(repoCaptor.getValue().getDefaultBranch())
+        .isEqualTo(RepoService.NEW_REPO_DEFAULT_BRANCH);
     assertThat(repoCaptor.getValue().getOwner()).isSameAs(tenant);
     ArgumentCaptor<RepoCreatedEvent> eventCaptor = ArgumentCaptor.forClass(RepoCreatedEvent.class);
     verify(eventPublisher).publishEvent(eventCaptor.capture());
@@ -119,10 +115,7 @@ class RepoServiceTest {
     assertThatThrownBy(
             () ->
                 repoService.update(
-                    tenantId,
-                    "owner",
-                    "repo",
-                    RepoForm.builder().name("repo").defaultBranch("main").build()))
+                    tenantId, "owner", "repo", RepoForm.builder().name("repo").build()))
         .isInstanceOf(ItemNotFoundException.class)
         .hasMessageContaining("userNotFound");
   }
@@ -143,10 +136,7 @@ class RepoServiceTest {
     assertThatThrownBy(
             () ->
                 repoService.update(
-                    tenantId,
-                    "owner",
-                    "repo",
-                    RepoForm.builder().name("repo").defaultBranch("main").build()))
+                    tenantId, "owner", "repo", RepoForm.builder().name("repo").build()))
         .isInstanceOf(ItemNotFoundException.class)
         .hasMessageContaining("repoNotFound");
   }
@@ -170,10 +160,7 @@ class RepoServiceTest {
     assertThatThrownBy(
             () ->
                 repoService.update(
-                    tenantId,
-                    "owner",
-                    "repo",
-                    RepoForm.builder().name("repo").defaultBranch("main").build()))
+                    tenantId, "owner", "repo", RepoForm.builder().name("repo").build()))
         .isInstanceOf(AccessNotAllowedException.class)
         .hasMessageContaining("repoAccessDenied");
   }
@@ -190,8 +177,7 @@ class RepoServiceTest {
     repo.setName("repo");
     repo.setOwner(owner);
     RepoInfo expectedInfo = createRepoInfo(repo.getId(), "repo");
-    RepoForm form =
-        RepoForm.builder().name("repo").description("new").defaultBranch("main").build();
+    RepoForm form = RepoForm.builder().name("repo").description("new").build();
 
     when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(owner));
     when(tenantRepository.findByUsername("owner")).thenReturn(Optional.of(owner));
@@ -203,6 +189,58 @@ class RepoServiceTest {
 
     assertThat(result).isSameAs(expectedInfo);
     assertThat(repo.getDescription()).isEqualTo("new");
+  }
+
+  @Test
+  @DisplayName("update preserves topics when form topics is null")
+  void update_preservesTopics_whenTopicsNull() {
+    UUID tenantId = UUID.randomUUID();
+    Tenant owner = new Tenant();
+    owner.setId(tenantId);
+    owner.setUsername("owner");
+    Repo repo = new Repo();
+    repo.setId(UUID.randomUUID());
+    repo.setName("repo");
+    repo.setOwner(owner);
+    repo.setTopics(Set.of("java", "spring"));
+    RepoInfo expectedInfo = createRepoInfo(repo.getId(), "repo");
+    RepoForm form = RepoForm.builder().name("repo").description("new").build();
+
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(owner));
+    when(tenantRepository.findByUsername("owner")).thenReturn(Optional.of(owner));
+    when(repoRepository.findByOwnerIdAndName(tenantId, "repo")).thenReturn(Optional.of(repo));
+    when(repoRepository.save(repo)).thenReturn(repo);
+    when(repoMapper.toDto(repo)).thenReturn(expectedInfo);
+
+    repoService.update(tenantId, "owner", "repo", form);
+
+    assertThat(repo.getTopics()).containsExactlyInAnyOrder("java", "spring");
+  }
+
+  @Test
+  @DisplayName("update replaces topics when form includes topics")
+  void update_replacesTopics_whenTopicsProvided() {
+    UUID tenantId = UUID.randomUUID();
+    Tenant owner = new Tenant();
+    owner.setId(tenantId);
+    owner.setUsername("owner");
+    Repo repo = new Repo();
+    repo.setId(UUID.randomUUID());
+    repo.setName("repo");
+    repo.setOwner(owner);
+    repo.setTopics(Set.of("old"));
+    RepoInfo expectedInfo = createRepoInfo(repo.getId(), "repo");
+    RepoForm form = RepoForm.builder().name("repo").description("d").topics(Set.of("go")).build();
+
+    when(tenantRepository.findById(tenantId)).thenReturn(Optional.of(owner));
+    when(tenantRepository.findByUsername("owner")).thenReturn(Optional.of(owner));
+    when(repoRepository.findByOwnerIdAndName(tenantId, "repo")).thenReturn(Optional.of(repo));
+    when(repoRepository.save(repo)).thenReturn(repo);
+    when(repoMapper.toDto(repo)).thenReturn(expectedInfo);
+
+    repoService.update(tenantId, "owner", "repo", form);
+
+    assertThat(repo.getTopics()).containsExactly("go");
   }
 
   @Test

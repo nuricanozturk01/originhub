@@ -236,9 +236,7 @@ public class BranchNonTxService {
   }
 
   private @NonNull BranchInfo buildBranchInfo(
-      final @NonNull RevWalk walk,
-      final @NonNull Ref ref,
-      final @NonNull String defaultBranch) {
+      final @NonNull RevWalk walk, final @NonNull Ref ref, final @NonNull String defaultBranch) {
 
     try {
 
