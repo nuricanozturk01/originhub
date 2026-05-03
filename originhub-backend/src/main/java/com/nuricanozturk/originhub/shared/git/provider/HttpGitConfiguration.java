@@ -84,7 +84,7 @@ public class HttpGitConfiguration {
           }
         });
 
-    final var registration = new ServletRegistrationBean<>(gitServlet, "/git/**");
+    final var registration = new ServletRegistrationBean<>(gitServlet, "/git/*");
     registration.setName("GitServlet");
     registration.setLoadOnStartup(1);
 
