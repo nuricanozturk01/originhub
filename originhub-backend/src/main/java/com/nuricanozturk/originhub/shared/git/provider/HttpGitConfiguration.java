@@ -84,7 +84,7 @@ public class HttpGitConfiguration {
           }
         });
 
-    final var registration = new ServletRegistrationBean<>(gitServlet, "/git/*");
+    final var registration = new ServletRegistrationBean<>(gitServlet, "/git/**");
     registration.setName("GitServlet");
     registration.setLoadOnStartup(1);
 
@@ -97,7 +97,7 @@ public class HttpGitConfiguration {
 
     final var filter = new HttpGitAuthenticationFilter(tenantRepository);
     final var registration = new FilterRegistrationBean<>(filter);
-    registration.addUrlPatterns("/git/*");
+    registration.addUrlPatterns("/git/**");
     registration.setOrder(HTTP_GIT_FILTER_ORDER);
 
     return registration;
