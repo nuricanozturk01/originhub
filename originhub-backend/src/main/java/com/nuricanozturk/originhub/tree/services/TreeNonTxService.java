@@ -186,7 +186,8 @@ public class TreeNonTxService {
       final var ref = gitRepo.findRef(Constants.R_HEADS + branch);
 
       if (ref == null) {
-        throw new ItemNotFoundException("branchNotFound: " + branch);
+        log.warn("Branch not found during zip write: {}", branch);
+        return;
       }
 
       try (final var revWalk = new RevWalk(gitRepo)) {

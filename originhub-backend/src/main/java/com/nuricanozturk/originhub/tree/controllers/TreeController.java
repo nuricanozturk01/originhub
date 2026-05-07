@@ -15,8 +15,8 @@
  */
 package com.nuricanozturk.originhub.tree.controllers;
 
+import com.nuricanozturk.originhub.shared.auth.services.JwtUtils;
 import com.nuricanozturk.originhub.shared.repo.services.RepoService;
-import com.nuricanozturk.originhub.shared.tenant.entities.Tenant;
 import com.nuricanozturk.originhub.tree.dtos.BlobResponse;
 import com.nuricanozturk.originhub.tree.dtos.TreeResponse;
 import com.nuricanozturk.originhub.tree.services.TreeNonTxService;
@@ -26,20 +26,22 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.util.UriUtils;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/repos/{owner}/{repo}")
 @RequiredArgsConstructor
@@ -51,6 +53,7 @@ public class TreeController {
 
   private final @NonNull TreeNonTxService treeNonTxService;
   private final @NonNull RepoService repoService;
+  private final JwtUtils jwtUtils;
 
   @GetMapping({"/tree/{branch}", "/tree/{branch}/**"})
   public @NonNull ResponseEntity<@NonNull TreeResponse> getTree(
@@ -103,15 +106,14 @@ public class TreeController {
 
   @GetMapping("/archive/{branch}")
   public @NonNull ResponseEntity<@NonNull StreamingResponseBody> downloadBranchArchive(
+      @RequestHeader(HttpHeaders.AUTHORIZATION) final String authHeader,
       @PathVariable final @NonNull String owner,
       @PathVariable final @NonNull String repo,
       @PathVariable final @NonNull String branch)
       throws IOException {
 
-    final var currentUser =
-        (Tenant) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    this.repoService.assertUserCanAccessRepo(currentUser.getId(), owner, repo);
-
+    final var userId = this.jwtUtils.extractUserId(authHeader);
+    this.repoService.assertUserCanAccessRepo(userId, owner, repo);
     this.treeNonTxService.assertBranchExists(owner, repo, branch);
 
     final var attachmentName = ArchivePathSupport.attachmentFileName(owner, repo, branch);
@@ -119,7 +121,13 @@ public class TreeController {
         ContentDisposition.attachment().filename(attachmentName, StandardCharsets.UTF_8).build();
 
     final StreamingResponseBody body =
-        outputStream -> this.treeNonTxService.writeBranchZip(owner, repo, branch, outputStream);
+        outputStream -> {
+          try {
+            this.treeNonTxService.writeBranchZip(owner, repo, branch, outputStream);
+          } catch (final Exception e) {
+            log.error("Error writing ZIP for {}/{}/{}: {}", owner, repo, branch, e.getMessage(), e);
+          }
+        };
 
     return ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())

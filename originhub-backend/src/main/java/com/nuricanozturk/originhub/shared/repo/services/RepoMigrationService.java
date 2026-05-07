@@ -48,8 +48,6 @@ public class RepoMigrationService {
       final String repoName, final String owner, final Tenant tenant, final String accessToken)
       throws IOException {
 
-    this.gitProvider.initRepo(tenant.getUsername(), repoName);
-
     final var targetPath = Path.of(this.repoRoot, tenant.getUsername(), repoName + ".git");
     final var tmpDir = Files.createTempDirectory("originhub-migration-");
 
@@ -104,12 +102,22 @@ public class RepoMigrationService {
 
       git.remoteRemove().setRemoteName("origin").call();
 
+      final var repo = git.getRepository();
+      repo.updateRef("HEAD").link("refs/heads/main");
+
     } catch (final Exception e) {
       log.error("Clone failed for {}/{}: {}", owner, repoName, e.getMessage(), e);
-      throw new IOException("Failed to clone repository: " + cloneUrl, e); // ← fırlat
+      throw new IOException("Failed to clone repository: " + cloneUrl, e);
     }
 
-    FileSystemUtils.copyRecursively(tmpDir, targetPath);
-    FileSystemUtils.deleteRecursively(tmpDir);
+    Files.createDirectories(targetPath.getParent());
+    FileSystemUtils.deleteRecursively(targetPath);
+
+    try {
+      Files.move(tmpDir, targetPath);
+    } catch (final Exception e) {
+      FileSystemUtils.copyRecursively(tmpDir, targetPath);
+      FileSystemUtils.deleteRecursively(tmpDir);
+    }
   }
 }
