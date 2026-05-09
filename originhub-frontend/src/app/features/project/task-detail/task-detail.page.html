@@ -137,7 +137,12 @@
           } @else {
           <h1
             class="text-base-content hover:text-primary group flex cursor-pointer items-start gap-2 text-xl leading-snug font-bold transition-colors"
+            role="button"
+            tabindex="0"
+            aria-label="Edit title"
             (click)="startEditTitle()"
+            (keydown.enter)="startEditTitle()"
+            (keydown.space)="$event.preventDefault(); startEditTitle()"
           >
             <span>{{ t.title }}</span>
             <lucide-icon
@@ -241,12 +246,12 @@
               @if (t.subtasks.length > 0) {
               <div class="flex items-center gap-1.5">
                 <span class="text-base-content/50 text-xs"
-                  >{{ t.subtasks.filter(s => s.status === 'COMPLETED').length }}/{{ t.subtasks.length }}</span
+                  >{{ completedSubtasksCount(t.subtasks) }}/{{ t.subtasks.length }}</span
                 >
                 <div class="bg-base-200 h-1.5 w-20 overflow-hidden rounded-full">
                   <div
                     class="bg-success h-full rounded-full transition-all duration-300"
-                    [style.width.%]="(t.subtasks.filter(s => s.status === 'COMPLETED').length / t.subtasks.length) * 100"
+                    [style.width.%]="subtasksProgressPercent(t.subtasks)"
                   ></div>
                 </div>
               </div>
@@ -444,17 +449,14 @@
             <div class="bg-base-200 h-2 flex-1 overflow-hidden rounded-full">
               <div
                 class="bg-success h-full rounded-full transition-all duration-300"
-                [style.width.%]="(t.subtasks.filter(s => s.status === 'COMPLETED').length / t.subtasks.length) * 100"
+                [style.width.%]="subtasksProgressPercent(t.subtasks)"
               ></div>
             </div>
             <span class="text-base-content/50 shrink-0 text-xs font-medium tabular-nums">
-              {{ t.subtasks.filter(s => s.status === 'COMPLETED').length }}/{{ t.subtasks.length }}
+              {{ completedSubtasksCount(t.subtasks) }}/{{ t.subtasks.length }}
             </span>
           </div>
-          <p class="text-base-content/40 text-xs">
-            {{ t.subtasks.filter(s => s.status === 'COMPLETED').length === t.subtasks.length ? 'All subtasks complete' :
-            t.subtasks.filter(s => s.status !== 'COMPLETED').length + ' remaining' }}
-          </p>
+          <p class="text-base-content/40 text-xs">{{ subtasksProgressCaption(t.subtasks) }}</p>
         </div>
         }
       </aside>

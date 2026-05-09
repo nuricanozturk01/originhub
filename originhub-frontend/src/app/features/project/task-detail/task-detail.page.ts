@@ -80,6 +80,22 @@ export class TaskDetailPage implements OnInit {
     return this.columns().find((c) => c.id === columnId)?.name ?? columnId;
   }
 
+  completedSubtasksCount(subtasks: SubtaskInfo[]): number {
+    return subtasks.filter((s) => s.status === 'COMPLETED').length;
+  }
+
+  subtasksProgressPercent(subtasks: SubtaskInfo[]): number {
+    if (subtasks.length === 0) return 0;
+    return (this.completedSubtasksCount(subtasks) / subtasks.length) * 100;
+  }
+
+  subtasksProgressCaption(subtasks: SubtaskInfo[]): string {
+    if (subtasks.length === 0) return '';
+    const done = this.completedSubtasksCount(subtasks);
+    if (done === subtasks.length) return 'All subtasks complete';
+    return `${subtasks.length - done} remaining`;
+  }
+
   readonly statuses: TaskStatus[] = ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'];
   readonly types: TaskType[] = ['TASK', 'BUG'];
 

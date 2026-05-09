@@ -414,7 +414,7 @@ export class BoardPage implements OnInit {
     event.dataTransfer!.setData('id', column.id);
   }
 
-  onColumnDragEnd(event: DragEvent): void {
+  onColumnDragEnd(): void {
     this.draggedColumnId.set(null);
     this.dragOverColumnHeaderId.set(null);
   }

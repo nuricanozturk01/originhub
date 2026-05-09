@@ -148,7 +148,9 @@
               @if (colorPickerColumnId() === column.id) {
               <div
                 class="bg-base-100 border-base-300 absolute top-8 right-0 z-50 w-52 rounded-xl border p-3 shadow-xl"
+                tabindex="0"
                 (click)="$event.stopPropagation()"
+                (keydown)="$event.stopPropagation()"
               >
                 <p class="text-base-content/50 mb-2 text-xs font-medium tracking-wide uppercase">Column color</p>
                 <div class="mb-2 grid grid-cols-6 gap-1.5">
@@ -306,7 +308,12 @@
 
 <!-- Close color picker on backdrop click -->
 @if (colorPickerColumnId()) {
-<div class="fixed inset-0 z-40" (click)="colorPickerColumnId.set(null)"></div>
+<button
+  type="button"
+  class="fixed inset-0 z-40 cursor-default border-0 bg-transparent p-0"
+  aria-label="Close color picker"
+  (click)="colorPickerColumnId.set(null)"
+></button>
 }
 
 <!-- Create board modal -->
@@ -333,7 +340,6 @@
         (input)="newBoardName.set($any($event.target).value)"
         (keydown.enter)="createBoard()"
         maxlength="120"
-       
       />
     </label>
     <div class="modal-action">
@@ -348,7 +354,12 @@
       </button>
     </div>
   </div>
-  <div class="modal-backdrop" (click)="showCreateBoardModal.set(false)"></div>
+  <button
+    type="button"
+    class="modal-backdrop cursor-default border-0 p-0"
+    aria-label="Close dialog"
+    (click)="showCreateBoardModal.set(false)"
+  ></button>
 </div>
 }
 
@@ -376,7 +387,6 @@
         (input)="newColumnName.set($any($event.target).value)"
         (keydown.enter)="addColumn()"
         maxlength="120"
-       
       />
     </label>
     <div class="modal-action">
@@ -391,7 +401,12 @@
       </button>
     </div>
   </div>
-  <div class="modal-backdrop" (click)="showAddColumnModal.set(false)"></div>
+  <button
+    type="button"
+    class="modal-backdrop cursor-default border-0 p-0"
+    aria-label="Close dialog"
+    (click)="showAddColumnModal.set(false)"
+  ></button>
 </div>
 }
 
@@ -420,12 +435,11 @@
           (input)="newTaskTitle.set($any($event.target).value)"
           (keydown.enter)="createTask()"
           maxlength="255"
-         
         />
       </label>
-      <label class="form-control w-full">
+      <div class="form-control w-full">
         <div class="label"><span class="label-text font-medium">Type</span></div>
-        <div class="flex gap-2">
+        <div class="flex gap-2" role="group" aria-label="Task type">
           <button
             type="button"
             class="btn btn-sm flex-1 gap-2"
@@ -447,7 +461,7 @@
             Bug
           </button>
         </div>
-      </label>
+      </div>
     </div>
     <div class="modal-action">
       <button type="button" class="btn btn-ghost" (click)="showCreateTaskModal.set(false)">Cancel</button>
@@ -461,6 +475,11 @@
       </button>
     </div>
   </div>
-  <div class="modal-backdrop" (click)="showCreateTaskModal.set(false)"></div>
+  <button
+    type="button"
+    class="modal-backdrop cursor-default border-0 p-0"
+    aria-label="Close dialog"
+    (click)="showCreateTaskModal.set(false)"
+  ></button>
 </div>
 }
